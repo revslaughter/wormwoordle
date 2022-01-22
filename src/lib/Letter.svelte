@@ -18,16 +18,17 @@
 		justify-content: center;
 		align-items: center;
 
-		border-bottom: 1px solid black;
+		border: 1px solid black;
 		border-radius: 15%;
 
-		box-shadow: 0px 0.125em 0.125em rgb(177, 177, 177);
+		box-shadow: 0px 0.0625em 0.125em rgb(148, 148, 148);
 
 		width: 2em;
 		height: 2em;
 
 		text-transform: uppercase;
 		font-family: Helvetica, 'Segoe UI', sans-serif;
+		font-size: 2em;
 	}
 
 	.new {
@@ -44,8 +45,8 @@
 		background-color: rgb(95, 190, 95);
 	}
 	.dead {
+		box-shadow: none;
 		background-color: rgb(233, 233, 233);
-		border-radius: 10%;
-		border-bottom: 2px solid rgb(218, 218, 218);
+		border: 1px solid rgb(218, 218, 218);
 	}
 </style>
