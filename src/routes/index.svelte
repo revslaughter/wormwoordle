@@ -2,10 +2,10 @@
 	import WordRow from '$lib/WordRow.svelte';
 </script>
 
-<WordRow guess="acrobat" />
+<WordRow guess="abdicates" />
 
-<WordRow guess="tory" />
+<WordRow guess="abuse" />
 
-<WordRow guess="worms" />
+<WordRow guess="assess" />
 
-<WordRow guess="wormy" />
+<WordRow guess="abscess" />

@@ -1,6 +1,6 @@
 <script>
 	export let char = '';
-	export let status = 'new';
+	export let status = 'dead';
 
 	if (char === '') {
 		status = 'dead';
