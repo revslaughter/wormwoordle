@@ -9,7 +9,7 @@
 
 <style>
 	.intro {
-		width: 95%;
+		width: 50%;
 		margin-left: auto;
 		margin-right: auto;
 	}

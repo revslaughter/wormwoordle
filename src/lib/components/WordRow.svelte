@@ -1,29 +1,32 @@
 <script>
-	import Letter from '$lib/Letter.svelte';
+	import Letter from '$lib/components/Letter.svelte';
+	import { storeAnswer } from '$lib/util/store/chooseWord';
 
 	export let guess = '';
-	export let answer = 'abscess';
+	export let tryCount = 0;
+	let score = 0;
 
 	const MAX_LETTERS = 10;
-	const range = [...Array(MAX_LETTERS).keys()]; // [0,1,2,...,MAX_LETTERS]
-
 	const INDICATOR = eval_shorter();
 
 	function eval_shorter() {
-		if (guess.length == answer.length && guess !== answer) return '⸱';
-		if (guess.length == answer.length && guess === answer) return '😃';
-		else return guess.length < answer.length ? '⇢' : '⇠';
+		if (guess.length == $storeAnswer.length && guess !== $storeAnswer) {
+			score++;
+			return '⸱';
+		}
+		if (guess.length == $storeAnswer.length && guess === $storeAnswer) return '😃';
+		else return guess.length < $storeAnswer.length ? '⇢' : '⇠';
 	}
 
 	/**
 	 * Return an array of all the indices of a character given a word.
-	 * 
+	 *
 	 * example:
-	 * 
+	 *
 	 * ```js
 	 * getIndiciesForCharacter('t', 'test') -> [0,3]
 	 * ```
-	 * 
+	 *
 	 * @param {string} char A string of length one
 	 * @param {string} str
 	 * @returns {number[]}
@@ -39,13 +42,13 @@
 
 	/**
 	 * Find the common elements of an array and return it
-	 * 
+	 *
 	 * example:
-	 * 
+	 *
 	 * ```js
 	 * intersect([0,2,4,6,8], [4,8,12]) -> [4,8]
 	 * ```
-	 * 
+	 *
 	 * @param {Array<number>} oneArray
 	 * @param {Array<number>} twoArray
 	 * @returns {Array<number>} The common elements of the arrays
@@ -70,8 +73,10 @@
 			.map((item) => {
 				let status = 'wrong';
 				if (item.intersection.includes(item.index)) {
+					score += 3;
 					status = 'right';
 				} else if (item.compIx.length >= item.allIx.length) {
+					score += 1;
 					status = 'close';
 				} else if (item.compIx.length < item.allIx.length) {
 					// what letter is this?
@@ -92,6 +97,7 @@
 			});
 
 	/**
+	 * Pads a row with dead letter cells until we reach the end.
 	 *
 	 * @param {Array<any>} inArray
 	 */
@@ -104,21 +110,34 @@
 		return copy;
 	};
 
-
-	let analysis = padWithDeath(analyze(guess, answer));
-	console.log(analysis);
+	let analysis = padWithDeath(analyze(guess, $storeAnswer));
+	score = tryCount > score ? 0 : score - tryCount;
 </script>
 
 <div class="wordRow">
+	<div class="score">{score}</div>
 	{#each analysis as guessLetter}
 		<Letter char={guessLetter.char} status={guessLetter.status} />
 	{/each}
 </div>
 
 <style>
+	.score {
+		display: grid;
+		grid-row: 1;
+
+		width: 2em;
+		height: 2em;
+
+		font-family: Helvetica, 'Segoe UI', sans-serif;
+		font-size: 2em;
+
+		justify-content: center;
+		align-items: center;
+	}
 	.wordRow {
-		width: 80%;
-		max-width: 725px;
+		width: 95%;
+		max-width: 800px;
 
 		margin-top: 0.5em;
 		margin-left: auto;
