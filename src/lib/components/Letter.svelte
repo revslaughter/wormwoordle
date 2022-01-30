@@ -23,12 +23,13 @@
 
 		box-shadow: 0px 0.0625em 0.125em rgb(148, 148, 148);
 
-		width: 2em;
+		min-width: 1em;
+		max-width: 2em;
 		height: 2em;
 
 		text-transform: uppercase;
 		font-family: Helvetica, 'Segoe UI', sans-serif;
-		font-size: 2em;
+		font-size: 16pt;
 	}
 
 	.new {

@@ -126,18 +126,18 @@
 		display: grid;
 		grid-row: 1;
 
-		width: 2em;
+		width: 1em;
 		height: 2em;
 
 		font-family: Helvetica, 'Segoe UI', sans-serif;
-		font-size: 2em;
+		font-size: 18pt;
 
 		justify-content: center;
 		align-items: center;
 	}
 	.wordRow {
 		width: 95%;
-		max-width: 800px;
+		max-width: 30em;
 
 		margin-top: 0.5em;
 		margin-left: auto;
@@ -147,6 +147,6 @@
 		display: grid;
 		gap: 2px;
 
-		grid-template-columns: repeat(10, 10fr);
+		grid-template-columns: repeat(11, 11fr);
 	}
 </style>
