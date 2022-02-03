@@ -50,4 +50,14 @@
 		background-color: rgb(233, 233, 233);
 		border: 1px solid rgb(218, 218, 218);
 	}
+	.score {
+		box-shadow: none;
+		border: 1px solid rgb(218, 218, 218);
+		border-radius: 0%;
+
+		font-size: 0.8em;
+
+		justify-content: center;
+		align-items: center;
+	}
 </style>

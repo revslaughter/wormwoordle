@@ -4,12 +4,16 @@
 
 	export let guess = '';
 	export let tryCount = 0;
+
+	/** @type {'display' | 'active'}*/
+	export let status = 'display';
 	let score = 0;
 
 	const MAX_LETTERS = 10;
 	const INDICATOR = eval_shorter();
 
 	function eval_shorter() {
+		if (status === 'active') return '';
 		if (guess.length == $storeAnswer.length && guess !== $storeAnswer) {
 			score++;
 			return '⸱';
@@ -110,31 +114,29 @@
 		return copy;
 	};
 
-	let analysis = padWithDeath(analyze(guess, $storeAnswer));
+	/**
+	 * If this is a display, put the statuses on each letter via `analyze`,
+	 * otherwise this will be the current guess.
+	 */
+	let displayLetters =
+		status === 'display'
+			? analyze(guess, $storeAnswer)
+			: [...guess].map((w) => ({ char: w, status: 'new' }));
+
+	let analysis = padWithDeath(displayLetters);
 	score = tryCount > score ? 0 : score - tryCount;
 </script>
 
 <div class="wordRow">
-	<div class="score">{score}</div>
 	{#each analysis as guessLetter}
 		<Letter char={guessLetter.char} status={guessLetter.status} />
 	{/each}
+	{#if status === 'display'}
+		<Letter char={score} status="score" />
+	{/if}
 </div>
 
 <style>
-	.score {
-		display: grid;
-		grid-row: 1;
-
-		width: 1em;
-		height: 2em;
-
-		font-family: Helvetica, 'Segoe UI', sans-serif;
-		font-size: 18pt;
-
-		justify-content: center;
-		align-items: center;
-	}
 	.wordRow {
 		width: 95%;
 		max-width: 30em;
@@ -146,6 +148,8 @@
 
 		display: grid;
 		gap: 2px;
+
+		align-items: center;
 
 		grid-template-columns: repeat(11, 11fr);
 	}
