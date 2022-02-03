@@ -1,15 +1,15 @@
 <script>
-	import ActiveRow from '$lib/components/ActiveRow.svelte';
 	import WordRow from '$lib/components/WordRow.svelte';
-	import { storeAnswer, findWord } from '$lib/util/store/chooseWord';
+	import { storeAnswer } from '$lib/util/store/chooseWord';
+
+	let activeGuess = '';
+	let guesses = [];
+
 </script>
 
-<WordRow guess={findWord()} tryCount={0} />
-<WordRow guess={findWord()} tryCount={1} />
-<WordRow guess={findWord()} tryCount={2} />
-<WordRow guess={findWord()} tryCount={3} />
-<WordRow guess={findWord()} tryCount={4} />
-<WordRow guess={findWord()} tryCount={5} />
-<WordRow guess={findWord()} tryCount={6} />
-<WordRow guess={findWord()} tryCount={7} />
-<ActiveRow />
+<div id="Game">
+	{#each guesses as guess, tryCount}
+		<WordRow {guess} {tryCount} />
+	{/each}
+	<WordRow guess={activeGuess} status="active" />
+</div>
