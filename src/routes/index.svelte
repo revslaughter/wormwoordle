@@ -1,15 +1,24 @@
 <script>
+	import GuessRow from '$lib/components/GuessRow.svelte';
 	import WordRow from '$lib/components/WordRow.svelte';
 	import { storeAnswer } from '$lib/util/store/chooseWord';
 
 	let activeGuess = '';
 	let guesses = [];
-
 </script>
+
+<svelte:window
+	on:keydown={(event) => {
+		if (event.key === 'Enter' && activeGuess !== '') {
+			guesses = [...guesses, activeGuess];
+			activeGuess = '';
+		}
+	}}
+/>
 
 <div id="Game">
 	{#each guesses as guess, tryCount}
 		<WordRow {guess} {tryCount} />
 	{/each}
-	<WordRow guess={activeGuess} status="active" />
+	<GuessRow bind:activeGuess />
 </div>

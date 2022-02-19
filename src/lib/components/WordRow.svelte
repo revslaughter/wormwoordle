@@ -105,7 +105,7 @@
 	 *
 	 * @param {Array<any>} inArray
 	 */
-	let padWithDeath = (array) => {
+	let padWithDeathAndIndicator = (array) => {
 		let copy = [...array];
 		if (copy.length < MAX_LETTERS) copy.push({ char: INDICATOR, status: 'new' });
 		while (copy.length < MAX_LETTERS) {
@@ -123,7 +123,7 @@
 			? analyze(guess, $storeAnswer)
 			: [...guess].map((w) => ({ char: w, status: 'new' }));
 
-	let analysis = padWithDeath(displayLetters);
+	let analysis = padWithDeathAndIndicator(displayLetters);
 	score = tryCount > score ? 0 : score - tryCount;
 </script>
 

@@ -13,5 +13,4 @@ export const findWord = () => {
 };
 
 const initWord = findWord();
-{@debug initWord}
 export const storeAnswer = writable(initWord);

@@ -1,5 +1,5 @@
 <div class="intro">
-	<h1>WormWoordle 👹</h1>
+	<h1>WormWoodle 👹</h1>
 	<h2>The variable-length <a href="https://www.powerlanguage.co.uk/wordle/">Wordle</a> clone</h2>
 	<p>Take a guess, up to 10 letters! We'll let you know if it's too long or too short</p>
 </div>

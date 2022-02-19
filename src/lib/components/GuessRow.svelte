@@ -1,0 +1,57 @@
+<script>
+	import Letter from '$lib/components/Letter.svelte';
+
+	const MAX_LETTERS = 10;
+
+	/**
+	 * Pads a row with dead letter cells until we reach the end.
+	 *
+	 * @param {Array<any>} inArray
+	 */
+	let padWithDeath = (array) => {
+		let copy = [...array];
+		while (copy.length < MAX_LETTERS) {
+			copy.push({ char: '', status: 'dead' });
+		}
+		return copy;
+	};
+
+	export let activeGuess = '';
+	$: displayLetters = [...activeGuess].map((w) => ({ char: w, status: 'new' }));
+	$: analysis = padWithDeath(displayLetters);
+</script>
+
+<svelte:window
+	on:keydown={(event) => {
+		if (event.key === 'Backspace') {
+			activeGuess = activeGuess.substring(0, activeGuess.length - 1);
+		} else if (event.code.startsWith('Key')) {
+			activeGuess = (activeGuess + event.key).substring(0, 10);
+		}
+	}}
+/>
+
+<div class="wordRow">
+	{#each analysis as guessLetter}
+		<Letter char={guessLetter.char} status={guessLetter.status} />
+	{/each}
+</div>
+
+<style>
+	.wordRow {
+		width: 95%;
+		max-width: 30em;
+
+		margin-top: 0.5em;
+		margin-left: auto;
+		margin-right: auto;
+		margin-bottom: 0.5em;
+
+		display: grid;
+		gap: 2px;
+
+		align-items: center;
+
+		grid-template-columns: repeat(11, 11fr);
+	}
+</style>
