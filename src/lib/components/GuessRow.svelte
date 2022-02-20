@@ -1,5 +1,6 @@
 <script>
 	import Letter from '$lib/components/Letter.svelte';
+	import { gameScore } from '$lib/util/store/score';
 	import SETTINGS from '$lib/util/store/settings';
 
 	const MAX_LETTERS = SETTINGS.MAX_LETTERS;
@@ -36,6 +37,7 @@
 	{#each analysis as guessLetter}
 		<Letter char={guessLetter.char} status={guessLetter.status} />
 	{/each}
+	<Letter char={$gameScore} status="score" />
 </div>
 
 <style>

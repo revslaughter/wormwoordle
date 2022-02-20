@@ -1,3 +1,5 @@
+import { writable } from 'svelte/store';
+
 /**
  * Scores the guess
  * @param {Array<{status:string}>} analyzedGuess
@@ -17,3 +19,5 @@ export const scoreGuess = (analyzedGuess) => {
 		})
 		.reduce((a, b) => a + b, 0);
 };
+
+export let gameScore = writable(0);

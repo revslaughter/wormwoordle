@@ -2,7 +2,7 @@
 	import GuessRow from '$lib/components/GuessRow.svelte';
 	import WordRow from '$lib/components/WordRow.svelte';
 	import lookupWord from '$lib/util/lookupWord';
-	import { guesses } from '$lib/util/store/gameStatus';
+	import { guesses, analyzedGuesses } from '$lib/util/store/gameStatus';
 	let activeGuess = '';
 </script>
 
@@ -16,7 +16,7 @@
 />
 
 <div id="Game">
-	{#each $guesses as guess, tryCount}
+	{#each $analyzedGuesses as guess, tryCount}
 		<WordRow {guess} {tryCount} />
 	{/each}
 	<GuessRow bind:activeGuess />

@@ -1,26 +1,28 @@
 <script>
 	import Letter from '$lib/components/Letter.svelte';
 	import { storeAnswer } from '$lib/util/store/chooseWord';
-	import { analyze } from '$lib/util/analyzeWord';
 	import SETTINGS from '$lib/util/store/settings';
-	import { scoreGuess } from '$lib/util/store/score';
-	import { analyzedGuesses, guesses } from '$lib/util/store/gameStatus';
+	import { scoreGuess, gameScore } from '$lib/util/store/score';
 
-	export let guess = '';
+	export let guess = [{}];
 	export let tryCount = 0;
 
 	let score = 0;
+
+	let isRight = guess.every((l) => l.status === 'right');
 
 	const MAX_LETTERS = SETTINGS.MAX_LETTERS;
 	const INDICATOR = eval_shorter();
 
 	function eval_shorter() {
-		if (guess.length == $storeAnswer.length && guess !== $storeAnswer) {
-			score++;
+		if (guess.length == $storeAnswer.length && !isRight) {
+			score += 3;
 			return '⸱';
 		}
-		if (guess.length == $storeAnswer.length && guess === $storeAnswer) return '😃';
-		else return guess.length < $storeAnswer.length ? '⇢' : '⇠';
+		if (guess.length == $storeAnswer.length && isRight) {
+			score += 10;
+			return '😃';
+		} else return guess.length < $storeAnswer.length ? '⇢' : '⇠';
 	}
 
 	/**
@@ -37,9 +39,10 @@
 		return copy;
 	};
 
-	let analysis = padWithDeathAndIndicator(analyze(guess, $storeAnswer));
-	score += scoreGuess(analysis);
+	let analysis = padWithDeathAndIndicator(guess);
+	score += scoreGuess(guess);
 	score = tryCount > score ? 0 : score - tryCount;
+	$gameScore += score;
 </script>
 
 <div class="wordRow">
