@@ -1,15 +1,14 @@
 <script>
 	import Letter from '$lib/components/Letter.svelte';
 	import { storeAnswer } from '$lib/util/store/chooseWord';
+	import SETTINGS from '$lib/util/store/settings';
 
 	export let guess = '';
 	export let tryCount = 0;
 
-	/** @type {'display' | 'active'}*/
-	export let status = 'display';
 	let score = 0;
 
-	const MAX_LETTERS = 10;
+	const MAX_LETTERS = SETTINGS.MAX_LETTERS;
 	const INDICATOR = eval_shorter();
 
 	function eval_shorter() {
@@ -118,10 +117,7 @@
 	 * If this is a display, put the statuses on each letter via `analyze`,
 	 * otherwise this will be the current guess.
 	 */
-	let displayLetters =
-		status === 'display'
-			? analyze(guess, $storeAnswer)
-			: [...guess].map((w) => ({ char: w, status: 'new' }));
+	let displayLetters = analyze(guess, $storeAnswer);
 
 	let analysis = padWithDeathAndIndicator(displayLetters);
 	score = tryCount > score ? 0 : score - tryCount;
@@ -131,9 +127,7 @@
 	{#each analysis as guessLetter}
 		<Letter char={guessLetter.char} status={guessLetter.status} />
 	{/each}
-	{#if status === 'display'}
-		<Letter char={score} status="score" />
-	{/if}
+	<Letter char={score} status="score" />
 </div>
 
 <style>

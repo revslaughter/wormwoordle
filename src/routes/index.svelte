@@ -1,7 +1,6 @@
 <script>
 	import GuessRow from '$lib/components/GuessRow.svelte';
 	import WordRow from '$lib/components/WordRow.svelte';
-	import { storeAnswer } from '$lib/util/store/chooseWord';
 
 	let activeGuess = '';
 	let guesses = [];

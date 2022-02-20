@@ -1,5 +1,7 @@
 <script>
 	export let char = '';
+
+	/** @type {'dead' | 'new' | 'close | 'wrong' | 'right' | 'score'}*/
 	export let status = 'dead';
 
 	if (char === '') {

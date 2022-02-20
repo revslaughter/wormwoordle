@@ -1,7 +1,8 @@
 <script>
 	import Letter from '$lib/components/Letter.svelte';
+	import SETTINGS from '$lib/util/store/settings';
 
-	const MAX_LETTERS = 10;
+	const MAX_LETTERS = SETTINGS.MAX_LETTERS;
 
 	/**
 	 * Pads a row with dead letter cells until we reach the end.
