@@ -1,22 +1,22 @@
 <script>
 	import GuessRow from '$lib/components/GuessRow.svelte';
 	import WordRow from '$lib/components/WordRow.svelte';
-
+	import lookupWord from '$lib/util/lookupWord';
+	import { guesses } from '$lib/util/store/gameStatus';
 	let activeGuess = '';
-	let guesses = [];
 </script>
 
 <svelte:window
 	on:keydown={(event) => {
-		if (event.key === 'Enter' && activeGuess !== '') {
-			guesses = [...guesses, activeGuess];
+		if (event.key === 'Enter' && activeGuess !== '' && lookupWord(activeGuess)) {
+			$guesses = [...$guesses, activeGuess];
 			activeGuess = '';
 		}
 	}}
 />
 
 <div id="Game">
-	{#each guesses as guess, tryCount}
+	{#each $guesses as guess, tryCount}
 		<WordRow {guess} {tryCount} />
 	{/each}
 	<GuessRow bind:activeGuess />
