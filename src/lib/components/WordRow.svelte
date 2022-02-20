@@ -4,6 +4,7 @@
 	import { analyze } from '$lib/util/analyzeWord';
 	import SETTINGS from '$lib/util/store/settings';
 	import { scoreGuess } from '$lib/util/store/score';
+	import { analyzedGuesses, guesses } from '$lib/util/store/gameStatus';
 
 	export let guess = '';
 	export let tryCount = 0;
