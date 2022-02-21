@@ -2,7 +2,7 @@
 	export let char = '';
 	import { fly } from 'svelte/transition';
 
-	/** @type {'dead' | 'new' | 'close | 'wrong' | 'right' | 'score'} */
+	/** @type {'dead' | 'new' | 'close' | 'wrong' | 'right' | 'score'} */
 	export let status = 'dead';
 
 	if (char === '') {
