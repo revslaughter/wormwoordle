@@ -3,15 +3,15 @@
 	import GuessRow from '$lib/components/GuessRow.svelte';
 	import WordRow from '$lib/components/WordRow.svelte';
 	import lookupWord from '$lib/util/lookupWord';
-	import { guesses, analyzedGuesses } from '$lib/util/store/gameStatus';
-	let activeGuess = '';
+	import { guesses, analyzedGuesses, activeGuess } from '$lib/util/store/gameStatus';
+	import Keyboard from '$lib/components/Keyboard.svelte';
 </script>
 
 <svelte:window
 	on:keydown={(event) => {
-		if (event.key === 'Enter' && activeGuess !== '' && lookupWord(activeGuess)) {
-			$guesses = [...$guesses, activeGuess];
-			activeGuess = '';
+		if (event.key === 'Enter' && $activeGuess !== '' && lookupWord($activeGuess)) {
+			$guesses = [...$guesses, $activeGuess];
+			$activeGuess = '';
 		}
 	}}
 />
@@ -22,5 +22,9 @@
 			<WordRow {guess} {tryCount} />
 		</div>
 	{/each}
-	<GuessRow bind:activeGuess />
+	<GuessRow />
+</div>
+
+<div id="Keyboard">
+	<Keyboard />
 </div>

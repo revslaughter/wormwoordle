@@ -2,6 +2,7 @@ import { writable, derived, get } from 'svelte/store';
 import { analyze } from '../analyzeWord';
 import { storeAnswer } from './chooseWord';
 
+export let activeGuess = writable('');
 export let guesses = writable([]);
 export let analyzedGuesses = derived(guesses, ($guesses) => {
 	let answer = get(storeAnswer);

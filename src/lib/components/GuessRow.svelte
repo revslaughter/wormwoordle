@@ -3,6 +3,7 @@
 	import Letter from '$lib/components/Letter.svelte';
 	import { gameScore } from '$lib/util/store/score';
 	import SETTINGS from '$lib/util/store/settings';
+	import { activeGuess } from '$lib/util/store/gameStatus';
 
 	const MAX_LETTERS = SETTINGS.MAX_LETTERS;
 
@@ -19,17 +20,16 @@
 		return copy;
 	};
 
-	export let activeGuess = '';
-	$: displayLetters = [...activeGuess].map((w) => ({ char: w, status: 'new' }));
+	$: displayLetters = [...$activeGuess].map((w) => ({ char: w, status: 'new' }));
 	$: analysis = padWithDeath(displayLetters);
 </script>
 
 <svelte:window
 	on:keydown={(event) => {
 		if (event.key === 'Backspace') {
-			activeGuess = activeGuess.substring(0, activeGuess.length - 1);
+			$activeGuess = $activeGuess.substring(0, $activeGuess.length - 1);
 		} else if (event.code.startsWith('Key')) {
-			activeGuess = (activeGuess + event.key).substring(0, 10);
+			$activeGuess = ($activeGuess + event.key).substring(0, SETTINGS.MAX_LETTERS);
 		}
 	}}
 />
