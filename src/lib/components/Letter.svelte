@@ -1,7 +1,8 @@
 <script>
 	export let char = '';
+	import { fly } from 'svelte/transition';
 
-	/** @type {'dead' | 'new' | 'close | 'wrong' | 'right' | 'score'}*/
+	/** @type {'dead' | 'new' | 'close | 'wrong' | 'right' | 'score'} */
 	export let status = 'dead';
 
 	if (char === '') {
@@ -9,7 +10,7 @@
 	}
 </script>
 
-<div class="letterTile {status}">{char}</div>
+<div class="letterTile {status}" in:fly={{ delay: 50, duration: 200, y: 50 }}>{char}</div>
 
 <style>
 	.letterTile {
@@ -56,8 +57,6 @@
 		box-shadow: none;
 		border: 1px solid rgb(218, 218, 218);
 		border-radius: 0%;
-
-		font-size: 0.8em;
 
 		justify-content: center;
 		align-items: center;

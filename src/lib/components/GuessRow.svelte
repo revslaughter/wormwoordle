@@ -1,4 +1,5 @@
 <script>
+	import { slide } from 'svelte/transition';
 	import Letter from '$lib/components/Letter.svelte';
 	import { gameScore } from '$lib/util/store/score';
 	import SETTINGS from '$lib/util/store/settings';
@@ -33,7 +34,7 @@
 	}}
 />
 
-<div class="wordRow">
+<div class="wordRow" transition:slide={{ duration: 1000 }}>
 	{#each analysis as guessLetter}
 		<Letter char={guessLetter.char} status={guessLetter.status} />
 	{/each}

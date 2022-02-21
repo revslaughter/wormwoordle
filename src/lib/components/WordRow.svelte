@@ -1,4 +1,6 @@
 <script>
+	import { blur, fly } from 'svelte/transition';
+
 	import Letter from '$lib/components/Letter.svelte';
 	import { storeAnswer } from '$lib/util/store/chooseWord';
 	import SETTINGS from '$lib/util/store/settings';
@@ -41,11 +43,11 @@
 
 	let analysis = padWithDeathAndIndicator(guess);
 	score += scoreGuess(guess);
-	score = tryCount > score ? 0 : score - tryCount;
+	score = score - tryCount;
 	$gameScore += score;
 </script>
 
-<div class="wordRow">
+<div class="wordRow" in:blur={{ duration: 400 }}>
 	{#each analysis as guessLetter}
 		<Letter char={guessLetter.char} status={guessLetter.status} />
 	{/each}

@@ -1,4 +1,5 @@
 <script>
+	import { flip } from 'svelte/animate';
 	import GuessRow from '$lib/components/GuessRow.svelte';
 	import WordRow from '$lib/components/WordRow.svelte';
 	import lookupWord from '$lib/util/lookupWord';
@@ -16,8 +17,10 @@
 />
 
 <div id="Game">
-	{#each $analyzedGuesses as guess, tryCount}
-		<WordRow {guess} {tryCount} />
+	{#each $analyzedGuesses as guess, tryCount (tryCount)}
+		<div animate:flip>
+			<WordRow {guess} {tryCount} />
+		</div>
 	{/each}
 	<GuessRow bind:activeGuess />
 </div>
