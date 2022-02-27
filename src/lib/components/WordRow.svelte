@@ -43,7 +43,8 @@
 
 	let analysis = padWithDeathAndIndicator(guess);
 	score += scoreGuess(guess);
-	score = score - tryCount;
+	let guessPenalty = tryCount * Math.floor(tryCount / SETTINGS.PAR);
+	score = score - guessPenalty;
 	$gameScore += score;
 </script>
 
@@ -53,6 +54,8 @@
 	{/each}
 	<Letter char={score} status="score" />
 </div>
+
+{@debug guessPenalty}
 
 <style>
 	.wordRow {

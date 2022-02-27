@@ -1,11 +1,10 @@
 <script>
 	import lookupWord from '$lib/util/lookupWord';
 
-	import { guesses, activeGuess } from '$lib/util/store/gameStatus';
+	import { guesses, activeGuess, keyboardStatus } from '$lib/util/store/gameStatus';
 	import SETTINGS from '$lib/util/store/settings';
 	import Key from './Key.svelte';
 
-	const keebLetters = ['qwertyuiop', 'asdfghjkl', '⏎zxcvbnm⌫'];
 	let handleKey = (letter) => {
 		switch (letter) {
 			case '⏎':
@@ -25,10 +24,10 @@
 </script>
 
 <div class="keyboard">
-	{#each keebLetters as row}
+	{#each $keyboardStatus as row}
 		<div class="keebRow">
-			{#each row as char}
-				<Key {char} {handleKey} />
+			{#each row as keyWithStatus}
+				<Key char={keyWithStatus.char} {handleKey} status={keyWithStatus.status} />
 			{/each}
 		</div>
 	{/each}
