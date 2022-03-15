@@ -1,4 +1,5 @@
 <script>
+	import { slide } from 'svelte/transition';
 	import lookupWord from '$lib/util/lookupWord';
 
 	import { guesses, activeGuess, keyboardStatus } from '$lib/util/store/gameStatus';
@@ -23,7 +24,7 @@
 	};
 </script>
 
-<div class="keyboard">
+<div class="keyboard" transition:slide={{ duration: 300 }}>
 	{#each $keyboardStatus as row}
 		<div class="keebRow">
 			{#each row as keyWithStatus}

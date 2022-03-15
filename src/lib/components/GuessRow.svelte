@@ -34,7 +34,7 @@
 	}}
 />
 
-<div class="wordRow" transition:slide={{ duration: 1000 }}>
+<div class="wordRow">
 	{#each analysis as guessLetter}
 		<Letter char={guessLetter.char} status={guessLetter.status} />
 	{/each}

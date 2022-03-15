@@ -3,8 +3,11 @@
 	import GuessRow from '$lib/components/GuessRow.svelte';
 	import WordRow from '$lib/components/WordRow.svelte';
 	import lookupWord from '$lib/util/lookupWord';
-	import { guesses, analyzedGuesses, activeGuess } from '$lib/util/store/gameStatus';
+	import { guesses, analyzedGuesses, activeGuess, winStatus } from '$lib/util/store/gameStatus';
 	import Keyboard from '$lib/components/Keyboard.svelte';
+	import { gameScore } from '$lib/util/store/score';
+
+	let cheat = true;
 </script>
 
 <svelte:window
@@ -22,9 +25,39 @@
 			<WordRow {guess} {tryCount} />
 		</div>
 	{/each}
-	<GuessRow />
+	{#if $winStatus === 'playing'}
+		<GuessRow />
+	{/if}
 </div>
 
-<div id="Keyboard">
-	<Keyboard />
-</div>
+{#if $winStatus === 'playing'}
+	<div id="Keyboard">
+		<Keyboard />
+	</div>
+{/if}
+
+{#if $winStatus === 'win'}
+	<div class="winner">
+		<h2>You're WIN! Score is {$gameScore}</h2>
+		<button
+			on:click={() => {
+				$activeGuess = '';
+				$guesses = [];
+				$gameScore = 0;
+				$winStatus = 'playing';
+			}}
+			>PLAY 👹 AGAIN
+		</button>
+	</div>
+{/if}
+
+<style>
+	.winner {
+		margin: auto;
+		max-width: 30rem;
+		text-align: center;
+	}
+	.winner button {
+		font-size: large;
+	}
+</style>

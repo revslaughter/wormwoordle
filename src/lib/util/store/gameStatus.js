@@ -37,3 +37,5 @@ export let keyboardStatus = derived(analyzedGuesses, ($analyzedGuesses) => {
 	return keebStatus;
 });
 export let score = writable(0);
+
+export let winStatus = writable('playing');

@@ -5,6 +5,7 @@
 	import { storeAnswer } from '$lib/util/store/chooseWord';
 	import SETTINGS from '$lib/util/store/settings';
 	import { scoreGuess, gameScore } from '$lib/util/store/score';
+	import { winStatus } from '$lib/util/store/gameStatus';
 
 	export let guess = [{}];
 	export let tryCount = 0;
@@ -23,6 +24,7 @@
 		}
 		if (guess.length == $storeAnswer.length && isRight) {
 			score += 10;
+			$winStatus = 'win';
 			return '😃';
 		} else return guess.length < $storeAnswer.length ? '⇢' : '⇠';
 	}
@@ -54,8 +56,6 @@
 	{/each}
 	<Letter char={score} status="score" />
 </div>
-
-{@debug guessPenalty}
 
 <style>
 	.wordRow {
