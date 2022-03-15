@@ -1,5 +1,4 @@
 <script>
-	import { slide } from 'svelte/transition';
 	import Letter from '$lib/components/Letter.svelte';
 	import { gameScore } from '$lib/util/store/score';
 	import SETTINGS from '$lib/util/store/settings';
