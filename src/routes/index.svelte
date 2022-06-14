@@ -8,8 +8,8 @@
 	import lookupWord from '$lib/util/lookupWord';
 
 	import { guesses, analyzedGuesses, activeGuess, winStatus } from '$lib/util/store/gameStatus';
-	import { gameScore } from '$lib/util/store/score';
 	import RulesModal from '$lib/components/RulesModal.svelte';
+	import { findWord, storeAnswer } from '$lib/util/store/chooseWord';
 
 	let cheat = true;
 	let showRules = false;
@@ -26,10 +26,10 @@
 
 <div class="intro">
 	<div class="menuButton"><MenuButton onMenuOpen={() => (showRules = !showRules)} /></div>
-	<h1>WormWoodle 👹</h1>
-	<h2>The variable-length <a href="https://www.powerlanguage.co.uk/wordle/">Wordle</a> clone</h2>
+	<h1>WormWord 👹</h1>
 	<p>Take a guess, up to 10 letters!</p>
-	<p>We'll let you know if it's too long or too short</p>
+	<p>You get seven guesses.</p>
+	<p>We'll let you know if it's too long or too short 😉</p>
 </div>
 
 <hr />
@@ -61,15 +61,16 @@
 
 {#if $winStatus === 'win'}
 	<div class="winner">
-		<h2>You're WIN! Score is {$gameScore}</h2>
+		<h2>You're WIN!</h2>
 		<button
 			on:click={() => {
+				$storeAnswer = findWord();
 				$activeGuess = '';
 				$guesses = [];
-				$gameScore = 0;
 				$winStatus = 'playing';
 			}}
-			>PLAY 👹 AGAIN
+		>
+			PLAY 👹 AGAIN
 		</button>
 	</div>
 {/if}

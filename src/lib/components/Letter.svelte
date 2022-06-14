@@ -2,7 +2,7 @@
 	export let char = '';
 	import { fly } from 'svelte/transition';
 
-	/** @type {'dead' | 'new' | 'close' | 'wrong' | 'right' | 'score'} */
+	/** @type {'dead' | 'new' | 'close' | 'wrong' | 'right'} */
 	export let status = 'dead';
 
 	if (char === '') {
@@ -52,13 +52,5 @@
 		box-shadow: none;
 		background-color: rgb(233, 233, 233);
 		border: 1px solid rgb(218, 218, 218);
-	}
-	.score {
-		box-shadow: none;
-		border: 1px solid rgb(218, 218, 218);
-		border-radius: 0%;
-
-		justify-content: center;
-		align-items: center;
 	}
 </style>

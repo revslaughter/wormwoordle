@@ -1,6 +1,5 @@
 <script>
 	import Letter from '$lib/components/Letter.svelte';
-	import { gameScore } from '$lib/util/store/score';
 	import SETTINGS from '$lib/util/store/settings';
 	import { activeGuess } from '$lib/util/store/gameStatus';
 
@@ -37,7 +36,6 @@
 	{#each analysis as guessLetter}
 		<Letter char={guessLetter.char} status={guessLetter.status} />
 	{/each}
-	<Letter char={$gameScore} status="score" />
 </div>
 
 <style>
@@ -55,6 +53,6 @@
 
 		align-items: center;
 
-		grid-template-columns: repeat(11, 11fr);
+		grid-template-columns: repeat(10, 10fr);
 	}
 </style>

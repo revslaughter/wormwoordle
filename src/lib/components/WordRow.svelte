@@ -4,13 +4,11 @@
 	import Letter from '$lib/components/Letter.svelte';
 	import { storeAnswer } from '$lib/util/store/chooseWord';
 	import SETTINGS from '$lib/util/store/settings';
-	import { scoreGuess, gameScore } from '$lib/util/store/score';
 	import { winStatus } from '$lib/util/store/gameStatus';
 
 	export let guess = [{}];
 	export let tryCount = 0;
 
-	let score = 0;
 
 	let isRight = guess.every((l) => l.status === 'right');
 
@@ -19,11 +17,9 @@
 
 	function eval_shorter() {
 		if (guess.length == $storeAnswer.length && !isRight) {
-			score += 3;
 			return '⸱';
 		}
 		if (guess.length == $storeAnswer.length && isRight) {
-			score += 10;
 			$winStatus = 'win';
 			return '😃';
 		} else return guess.length < $storeAnswer.length ? '⇢' : '⇠';
@@ -44,17 +40,14 @@
 	};
 
 	let analysis = padWithDeathAndIndicator(guess);
-	score += scoreGuess(guess);
-	let guessPenalty = tryCount * Math.floor(tryCount / SETTINGS.PAR);
-	score = score - guessPenalty;
-	$gameScore += score;
 </script>
+
+{@debug $storeAnswer}
 
 <div class="wordRow" in:blur={{ duration: 400 }}>
 	{#each analysis as guessLetter}
 		<Letter char={guessLetter.char} status={guessLetter.status} />
 	{/each}
-	<Letter char={score} status="score" />
 </div>
 
 <style>
@@ -72,6 +65,6 @@
 
 		align-items: center;
 
-		grid-template-columns: repeat(11, 11fr);
+		grid-template-columns: repeat(10, 10fr);
 	}
 </style>
