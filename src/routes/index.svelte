@@ -5,15 +5,18 @@
 	import WordRow from '$lib/components/WordRow.svelte';
 	import Keyboard from '$lib/components/Keyboard.svelte';
 	import RulesModal from '$lib/components/RulesModal.svelte';
+	import ShareResult from '$lib/components/ShareResult.svelte';
 
 	import { createGame } from '$lib/game/game';
 	import { lengthHint } from '$lib/game/analyze';
+	import { buildShareText } from '$lib/game/share';
 
 	const game = createGame();
 	const { answer, guesses, activeGuess, analyzedGuesses, keyboardStatus, status } = game;
 
 	let showRules = false;
 
+	$: shareText = buildShareText($guesses, $answer);
 	$: activeLetters = [...$activeGuess].map((char) => ({ char, status: 'new' }));
 </script>
 
@@ -53,6 +56,7 @@
 {#if $status === 'win'}
 	<div class="winner">
 		<h2>You're WIN!</h2>
+		<ShareResult text={shareText} />
 		<button on:click={game.reset}>PLAY 👹 AGAIN</button>
 	</div>
 {/if}
