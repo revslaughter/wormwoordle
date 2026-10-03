@@ -1,28 +1,26 @@
 <script>
 	import { flip } from 'svelte/animate';
+	import { blur } from 'svelte/transition';
 	import MenuButton from '$lib/components/MenuButton.svelte';
-	import GuessRow from '$lib/components/GuessRow.svelte';
 	import WordRow from '$lib/components/WordRow.svelte';
 	import Keyboard from '$lib/components/Keyboard.svelte';
-
-	import lookupWord from '$lib/util/lookupWord';
-
-	import { guesses, analyzedGuesses, activeGuess, winStatus } from '$lib/util/store/gameStatus';
 	import RulesModal from '$lib/components/RulesModal.svelte';
-	import { findWord, storeAnswer } from '$lib/util/store/chooseWord';
+	import ShareResult from '$lib/components/ShareResult.svelte';
 
-	let cheat = true;
+	import { createGame } from '$lib/game/game';
+	import { lengthHint } from '$lib/game/analyze';
+	import { buildShareText } from '$lib/game/share';
+
+	const game = createGame();
+	const { answer, guesses, activeGuess, analyzedGuesses, keyboardStatus, status } = game;
+
 	let showRules = false;
+
+	$: shareText = buildShareText($guesses, $answer);
+	$: activeLetters = [...$activeGuess].map((char) => ({ char, status: 'new' }));
 </script>
 
-<svelte:window
-	on:keydown={(event) => {
-		if (event.key === 'Enter' && $activeGuess !== '' && lookupWord($activeGuess)) {
-			$guesses = [...$guesses, $activeGuess];
-			$activeGuess = '';
-		}
-	}}
-/>
+<svelte:window on:keydown={(event) => game.pressKey(event.key)} />
 
 <div class="intro">
 	<div class="menuButton"><MenuButton onMenuOpen={() => (showRules = !showRules)} /></div>
@@ -35,43 +33,31 @@
 <hr />
 
 {#if showRules}
-	<RulesModal
-		onClose={() => {
-			showRules = !showRules;
-		}}
-	/>
+	<RulesModal onClose={() => (showRules = false)} />
 {/if}
 
 <div id="Game">
-	{#each $analyzedGuesses as guess, tryCount (tryCount)}
-		<div animate:flip>
-			<WordRow {guess} {tryCount} />
+	{#each $analyzedGuesses as letters, tryCount (tryCount)}
+		<div animate:flip in:blur={{ duration: 400 }}>
+			<WordRow {letters} hint={lengthHint($guesses[tryCount], $answer)} />
 		</div>
 	{/each}
-	{#if $winStatus === 'playing'}
-		<GuessRow />
+	{#if $status === 'playing'}
+		<WordRow letters={activeLetters} />
 	{/if}
 </div>
 
-{#if $winStatus === 'playing'}
+{#if $status === 'playing'}
 	<div id="Keyboard">
-		<Keyboard />
+		<Keyboard rows={$keyboardStatus} onKey={game.pressKey} />
 	</div>
 {/if}
 
-{#if $winStatus === 'win'}
+{#if $status === 'win'}
 	<div class="winner">
 		<h2>You're WIN!</h2>
-		<button
-			on:click={() => {
-				$storeAnswer = findWord();
-				$activeGuess = '';
-				$guesses = [];
-				$winStatus = 'playing';
-			}}
-		>
-			PLAY 👹 AGAIN
-		</button>
+		<ShareResult text={shareText} />
+		<button on:click={game.reset}>PLAY 👹 AGAIN</button>
 	</div>
 {/if}
 

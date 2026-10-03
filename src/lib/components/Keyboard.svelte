@@ -1,34 +1,18 @@
 <script>
 	import { slide } from 'svelte/transition';
-	import lookupWord from '$lib/util/lookupWord';
-
-	import { guesses, activeGuess, keyboardStatus } from '$lib/util/store/gameStatus';
-	import SETTINGS from '$lib/util/store/settings';
 	import Key from './Key.svelte';
 
-	let handleKey = (letter) => {
-		switch (letter) {
-			case '⏎':
-				if ($activeGuess !== '' && lookupWord($activeGuess)) {
-					$guesses = [...$guesses, $activeGuess];
-					$activeGuess = '';
-				}
-				break;
-			case '⌫':
-				$activeGuess = $activeGuess.substring(0, $activeGuess.length - 1);
-				break;
-			default:
-				$activeGuess = ($activeGuess + letter).substring(0, SETTINGS.MAX_LETTERS);
-				break;
-		}
-	};
+	/** @type {{ char: string, status: string }[][]} */
+	export let rows = [];
+	/** @type {(key: string) => void} */
+	export let onKey;
 </script>
 
 <div class="keyboard" transition:slide={{ duration: 300 }}>
-	{#each $keyboardStatus as row}
+	{#each rows as row}
 		<div class="keebRow">
-			{#each row as keyWithStatus}
-				<Key char={keyWithStatus.char} {handleKey} status={keyWithStatus.status} />
+			{#each row as { char, status }}
+				<Key {char} {status} {onKey} />
 			{/each}
 		</div>
 	{/each}
