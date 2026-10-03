@@ -23,6 +23,8 @@ const emojiRow = (guess: string, answer: string): string => {
  * Shareable, spoiler-free summary of a finished game.
  */
 export const buildShareText = (guesses: string[], answer: string): string => {
-	const title = `WormWord 👹 ${guesses.length} ${guesses.length === 1 ? 'guess' : 'guesses'}`;
+	const title = guesses.includes(answer)
+		? `WormWord 👹 ${guesses.length} ${guesses.length === 1 ? 'guess' : 'guesses'}`
+		: `WormWord 👹 stumped after ${guesses.length} guesses 💀`;
 	return [title, '', ...guesses.map((guess) => emojiRow(guess, answer))].join('\n');
 };

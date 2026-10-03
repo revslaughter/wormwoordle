@@ -25,6 +25,12 @@ describe('buildShareText', () => {
 		expect(buildShareText(['worm'], 'worm').split('\n')[0]).toBe('WormWord 👹 1 guess');
 	});
 
+	it('says the worm won when the answer was never found', () => {
+		const text = buildShareText(['cat', 'dog'], 'worm');
+		expect(text.split('\n')[0]).toBe('WormWord 👹 stumped after 2 guesses 💀');
+		expect(text).not.toContain('😃');
+	});
+
 	it('does not reveal the answer', () => {
 		expect(buildShareText(['the', 'acetates'], 'acetates')).not.toContain('acetates');
 	});

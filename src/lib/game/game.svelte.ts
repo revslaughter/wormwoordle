@@ -1,9 +1,9 @@
 import { analyzeGuess } from './analyze';
 import type { LetterStatus } from './analyze';
 import { isValidWord, pickAnswer } from './words';
-import { KEYBOARD_ROWS, MAX_LETTERS } from './settings';
+import { KEYBOARD_ROWS, MAX_GUESSES, MAX_LETTERS } from './settings';
 
-export type GameStatus = 'playing' | 'win';
+export type GameStatus = 'playing' | 'win' | 'lose';
 
 /** How "good" a status is for a key; the best status seen so far wins. */
 const STATUS_RANK: Record<LetterStatus, number> = { new: 0, wrong: 1, close: 2, right: 3 };
@@ -19,7 +19,13 @@ export class Game {
 
 	analyzedGuesses = $derived(this.guesses.map((guess) => analyzeGuess(guess, this.answer)));
 
-	status = $derived<GameStatus>(this.guesses.includes(this.answer) ? 'win' : 'playing');
+	status = $derived<GameStatus>(
+		this.guesses.includes(this.answer)
+			? 'win'
+			: this.guesses.length >= MAX_GUESSES
+				? 'lose'
+				: 'playing'
+	);
 
 	keyboardStatus = $derived.by(() => {
 		const best: Record<string, LetterStatus> = {};

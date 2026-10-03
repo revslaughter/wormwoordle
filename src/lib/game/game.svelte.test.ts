@@ -102,6 +102,38 @@ describe('winning', () => {
 	});
 });
 
+describe('losing', () => {
+	const wrong = ['cat', 'dog', 'the', 'and', 'not', 'but', 'you'];
+
+	it('keeps playing until the guesses run out, then loses', () => {
+		wrong.slice(0, -1).forEach((w) => guess(game, w));
+		expect(game.status).toBe('playing');
+		guess(game, wrong[wrong.length - 1]);
+		expect(game.status).toBe('lose');
+	});
+
+	it('wins, not loses, when the last guess is the answer', () => {
+		wrong.slice(0, -1).forEach((w) => guess(game, w));
+		guess(game, 'worm');
+		expect(game.status).toBe('win');
+	});
+
+	it('ignores typing and submitting after a loss', () => {
+		wrong.forEach((w) => guess(game, w));
+		type(game, 'worm');
+		game.pressKey('Enter');
+		expect(game.activeGuess).toBe('');
+		expect(game.guesses).toEqual(wrong);
+	});
+
+	it('starts a fresh game on reset', () => {
+		wrong.forEach((w) => guess(game, w));
+		game.reset();
+		expect(game.status).toBe('playing');
+		expect(game.guesses).toEqual([]);
+	});
+});
+
 describe('reset', () => {
 	it('starts a fresh game with a new answer', () => {
 		answers.push('dog');

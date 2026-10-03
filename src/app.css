@@ -1,0 +1,11 @@
+:root {
+	/* Tile and key colours, shared by every component that shows a letter */
+	--tile-new: rgb(218, 218, 218);
+	--tile-close: rgb(236, 236, 83);
+	--tile-wrong: rgb(65, 65, 65);
+	--tile-wrong-text: whitesmoke;
+	--tile-right: rgb(95, 190, 95);
+	--tile-dead: rgb(233, 233, 233);
+	--tile-dead-border: rgb(218, 218, 218);
+	--key: rgb(152, 172, 192);
+}

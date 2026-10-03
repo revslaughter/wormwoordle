@@ -6,6 +6,7 @@
 	import Keyboard from '#lib/components/Keyboard.svelte';
 	import RulesModal from '#lib/components/RulesModal.svelte';
 	import ShareResult from '#lib/components/ShareResult.svelte';
+	import AnswerReveal from '#lib/components/AnswerReveal.svelte';
 
 	import { Game } from '#lib/game/game.svelte';
 	import { lengthHint } from '#lib/game/analyze';
@@ -62,6 +63,16 @@
 	</div>
 {/if}
 
+{#if game.status === 'lose'}
+	<div class="loser">
+		<h2>The worm got you 👹</h2>
+		<p>The word was</p>
+		<AnswerReveal word={game.answer} />
+		<ShareResult text={shareText} />
+		<button onclick={game.reset}>PLAY 👹 AGAIN</button>
+	</div>
+{/if}
+
 <style>
 	.intro {
 		max-width: 30rem;
@@ -77,12 +88,14 @@
 		margin-top: 7px;
 		margin-right: 7px;
 	}
-	.winner {
+	.winner,
+	.loser {
 		margin: auto;
 		max-width: 30rem;
 		text-align: center;
 	}
-	.winner button {
+	.winner button,
+	.loser button {
 		font-size: large;
 	}
 </style>
