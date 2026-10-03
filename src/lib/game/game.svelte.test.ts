@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import wordList from '../../../data/2of12inf.json';
 import { Game } from './game.svelte';
 import type { WordSource } from './words';
+import { noStore } from './savedGame';
 import type { GameStore, SavedGame } from './savedGame';
 
 const words = new Set(wordList);
@@ -30,6 +31,9 @@ const guess = async (game: Game, word: string) => {
 };
 
 /** A store that keeps the saved game in memory, so tests can look at it. */
+const DAY = '2026-10-03';
+const today = () => DAY;
+
 const memoryStore = (initial: SavedGame | null = null) => {
 	const store: GameStore & { saved: SavedGame | null } = {
 		saved: initial,
@@ -148,15 +152,20 @@ describe('submitting', () => {
 		const slowCheck = async () => {
 			const check = deferred<boolean>();
 			const checks: string[] = [];
-			const slow = new Game({
-				isValid: (word) => {
-					checks.push(word);
-					return check.promise;
+			const clock = { day: '2026-10-03' };
+			const slow = new Game(
+				{
+					isValid: (word) => {
+						checks.push(word);
+						return check.promise;
+					},
+					pickAnswer: async () => 'worm'
 				},
-				pickAnswer: async () => 'worm'
-			});
+				noStore,
+				() => clock.day
+			);
 			await slow.start();
-			return { slow, check, checks };
+			return { slow, check, checks, clock };
 		};
 
 		it('only checks once if Enter is pressed again', async () => {
@@ -181,11 +190,12 @@ describe('submitting', () => {
 			expect(slow.activeGuess).toBe('ca');
 		});
 
-		it('drops the result if the game was reset meanwhile', async () => {
-			const { slow, check } = await slowCheck();
+		it('drops the result if the day changed meanwhile', async () => {
+			const { slow, check, clock } = await slowCheck();
 			type(slow, 'cat');
 			const submitting = slow.pressKey('Enter');
-			const resetting = slow.reset();
+			clock.day = '2026-10-04';
+			const resetting = slow.refreshDay();
 			check.resolve(true);
 			await Promise.all([submitting, resetting]);
 			expect(slow.guesses).toEqual([]);
@@ -224,9 +234,13 @@ describe('notice', () => {
 		expect(game.notice).toBe('');
 	});
 
-	it('clears on reset', async () => {
+	it('clears when a new day starts', async () => {
+		let day = '2026-10-03';
+		game = new Game(fakeSource(['worm', 'dog']), noStore, () => day);
+		await game.start();
 		await guess(game, 'zzzzzz');
-		await game.reset();
+		day = '2026-10-04';
+		await game.refreshDay();
 		expect(game.notice).toBe('');
 	});
 });
@@ -282,35 +296,41 @@ describe('losing', () => {
 		expect(game.guesses).toEqual(wrong);
 	});
 
-	it('starts a fresh game on reset', async () => {
+	it('cannot be replayed when it is the word of the day', async () => {
 		await guessAll(wrong);
-		await game.reset();
-		expect(game.status).toBe('playing');
-		expect(game.guesses).toEqual([]);
+		expect(game.canPlayAgain).toBe(false);
+		await game.playAgain();
+		expect(game.status).toBe('lose');
+		expect(game.guesses).toEqual(wrong);
 	});
 });
 
 describe('saving', () => {
 	it('saves the answer once it has loaded', async () => {
 		const store = memoryStore();
-		await new Game(fakeSource(['worm']), store).start();
-		expect(store.saved).toEqual({ answer: 'worm', guesses: [] });
+		await new Game(fakeSource(['worm']), store, today).start();
+		expect(store.saved).toEqual({ mode: 'daily', day: DAY, answer: 'worm', guesses: [] });
 	});
 
 	it('saves each accepted guess, but not rejected ones', async () => {
 		const store = memoryStore();
-		const saving = new Game(fakeSource(['worm']), store);
+		const saving = new Game(fakeSource(['worm']), store, today);
 		await saving.start();
 		await guess(saving, 'cat');
 		await guess(saving, 'zzzzzz');
-		expect(store.saved).toEqual({ answer: 'worm', guesses: ['cat'] });
+		expect(store.saved).toEqual({
+			mode: 'daily',
+			day: DAY,
+			answer: 'worm',
+			guesses: ['cat']
+		});
 	});
 
 	it('carries on a saved game instead of picking an answer', async () => {
-		const store = memoryStore({ answer: 'dog', guesses: ['cat'] });
+		const store = memoryStore({ mode: 'daily', day: DAY, answer: 'dog', guesses: ['cat'] });
 		const source = fakeSource(['worm']);
 		const picked = vi.spyOn(source, 'pickAnswer');
-		const resumed = new Game(source, store);
+		const resumed = new Game(source, store, today);
 		await resumed.start();
 		expect(picked).not.toHaveBeenCalled();
 		expect(resumed.ready).toBe(true);
@@ -322,18 +342,36 @@ describe('saving', () => {
 
 	it('shows a finished game as finished', async () => {
 		const over = ['cat', 'dog', 'the', 'and', 'not', 'but', 'you'];
-		const resumed = new Game(fakeSource([]), memoryStore({ answer: 'worm', guesses: over }));
+		const resumed = new Game(
+			fakeSource([]),
+			memoryStore({ mode: 'daily', day: DAY, answer: 'worm', guesses: over }),
+			today
+		);
 		await resumed.start();
 		expect(resumed.status).toBe('lose');
 	});
 
-	it('forgets the old game on reset and saves the new one', async () => {
+	it("ignores yesterday's game and picks the new word of the day", async () => {
+		const store = memoryStore({
+			mode: 'daily',
+			day: '2026-10-02',
+			answer: 'dog',
+			guesses: ['cat']
+		});
+		const next = new Game(fakeSource(['worm']), store, today);
+		await next.start();
+		expect(next.answer).toBe('worm');
+		expect(next.guesses).toEqual([]);
+		expect(store.saved).toEqual({ mode: 'daily', day: DAY, answer: 'worm', guesses: [] });
+	});
+
+	it('forgets a won game on play again and saves the practice game', async () => {
 		const store = memoryStore();
-		const saving = new Game(fakeSource(['worm', 'dog']), store);
+		const saving = new Game(fakeSource(['worm', 'dog']), store, today);
 		await saving.start();
-		await guess(saving, 'cat');
-		await saving.reset();
-		expect(store.saved).toEqual({ answer: 'dog', guesses: [] });
+		await guess(saving, 'worm');
+		await saving.playAgain();
+		expect(store.saved).toEqual({ mode: 'practice', day: DAY, answer: 'dog', guesses: [] });
 	});
 
 	it('does not save when the answer fails to load', async () => {
@@ -345,22 +383,126 @@ describe('saving', () => {
 					throw new Error('offline');
 				}
 			},
-			store
+			store,
+			today
 		).start();
 		expect(store.saved).toBeNull();
 	});
 });
 
-describe('reset', () => {
-	it('starts a fresh game with a new answer', async () => {
-		game = new Game(fakeSource(['worm', 'dog']));
+describe('the word of the day', () => {
+	/** A source that records what it was asked to pick with. */
+	const recordingSource = () => {
+		const randoms: Array<(() => number) | undefined> = [];
+		const source: WordSource = {
+			isValid: async (word) => words.has(word),
+			pickAnswer: async (random) => {
+				randoms.push(random);
+				return 'worm';
+			}
+		};
+		return { source, randoms };
+	};
+
+	it('is picked with the same random sequence for everyone on a day', async () => {
+		const first = recordingSource();
+		const second = recordingSource();
+		await new Game(first.source, noStore, today).start();
+		await new Game(second.source, noStore, today).start();
+		expect(first.randoms[0]!()).toBe(second.randoms[0]!());
+	});
+
+	it('is a different sequence on another day', async () => {
+		const first = recordingSource();
+		const second = recordingSource();
+		await new Game(first.source, noStore, today).start();
+		await new Game(second.source, noStore, () => '2026-10-04').start();
+		expect(first.randoms[0]!()).not.toBe(second.randoms[0]!());
+	});
+
+	it('starts in daily mode on the current day', async () => {
+		game = new Game(fakeSource(['worm']), noStore, today);
+		await game.start();
+		expect(game.mode).toBe('daily');
+		expect(game.day).toBe(DAY);
+	});
+
+	it('moves on to the next word when the day changes', async () => {
+		let day = DAY;
+		game = new Game(fakeSource(['worm', 'dog']), noStore, () => day);
+		await game.start();
+		await guess(game, 'cat');
+		await game.refreshDay();
+		expect(game.answer).toBe('worm');
+		day = '2026-10-04';
+		await game.refreshDay();
+		expect(game.answer).toBe('dog');
+		expect(game.guesses).toEqual([]);
+		expect(game.day).toBe('2026-10-04');
+	});
+
+	it('leaves a practice game in progress alone when the day changes', async () => {
+		let day = DAY;
+		game = new Game(fakeSource(['worm', 'dog', 'cat']), noStore, () => day);
 		await game.start();
 		await guess(game, 'worm');
-		type(game, 'ca');
-		await game.reset();
+		await game.playAgain();
+		await guess(game, 'cat');
+		day = '2026-10-04';
+		await game.refreshDay();
+		expect(game.mode).toBe('practice');
+		expect(game.answer).toBe('dog');
+		expect(game.guesses).toEqual(['cat']);
+	});
+});
+
+describe('play again', () => {
+	it('starts a random practice game once the daily word is won', async () => {
+		game = new Game(fakeSource(['worm', 'dog']), noStore, today);
+		await game.start();
+		await guess(game, 'worm');
+		expect(game.canPlayAgain).toBe(true);
+		await game.playAgain();
+		expect(game.mode).toBe('practice');
 		expect(game.status).toBe('playing');
 		expect(game.guesses).toEqual([]);
 		expect(game.activeGuess).toBe('');
+		expect(game.answer).toBe('dog');
+	});
+
+	it('picks a practice word at random, not from the date', async () => {
+		const randoms: Array<(() => number) | undefined> = [];
+		game = new Game(
+			{
+				isValid: async (word) => words.has(word),
+				pickAnswer: async (random) => (randoms.push(random), 'worm')
+			},
+			noStore,
+			today
+		);
+		await game.start();
+		await guess(game, 'worm');
+		await game.playAgain();
+		expect(randoms[1]).toBeUndefined();
+	});
+
+	it('does nothing while the game is still being played', async () => {
+		await guess(game, 'cat');
+		await game.playAgain();
+		expect(game.guesses).toEqual(['cat']);
+	});
+
+	it('can be repeated after losing a practice game', async () => {
+		const wrong = ['cat', 'dog', 'the', 'and', 'not', 'but', 'you'];
+		game = new Game(fakeSource(['worm', 'worm', 'dog']), noStore, today);
+		await game.start();
+		await guess(game, 'worm');
+		await game.playAgain();
+		for (const word of wrong) await guess(game, word);
+		expect(game.status).toBe('lose');
+		expect(game.canPlayAgain).toBe(true);
+		await game.playAgain();
+		expect(game.status).toBe('playing');
 		expect(game.answer).toBe('dog');
 	});
 
@@ -369,12 +511,13 @@ describe('reset', () => {
 		const answers = [Promise.resolve('worm'), next.promise];
 		game = new Game({ isValid: async () => true, pickAnswer: () => answers.shift()! });
 		await game.start();
-		const resetting = game.reset();
+		await guess(game, 'worm');
+		const replaying = game.playAgain();
 		expect(game.ready).toBe(false);
 		type(game, 'cat');
 		expect(game.activeGuess).toBe('');
 		next.resolve('dog');
-		await resetting;
+		await replaying;
 		expect(game.ready).toBe(true);
 	});
 });

@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import wordList from '../../../data/2of12inf.json';
 import { MIN_LETTERS, MAX_LETTERS } from './settings';
+import { dailyRandom } from './daily';
 import { createWordSource } from './words';
 
 const shardDir = new URL('../../../static/words/', import.meta.url);
@@ -103,10 +104,20 @@ describe('pickAnswer', () => {
 			.trim()
 			.split('\n');
 
-		const first = createWordSource(diskFetcher().fetchText, () => 0);
-		expect(await first.pickAnswer()).toBe(firstShard[0]);
-		const last = createWordSource(diskFetcher().fetchText, () => 0.999999999);
-		expect(await last.pickAnswer()).toBe(lastShard[lastShard.length - 1]);
+		const source = createWordSource(diskFetcher().fetchText);
+		expect(await source.pickAnswer(() => 0)).toBe(firstShard[0]);
+		expect(await source.pickAnswer(() => 0.999999999)).toBe(lastShard[lastShard.length - 1]);
+	});
+
+	it('picks the same word for the same random sequence', async () => {
+		const source = createWordSource(diskFetcher().fetchText);
+		const picks = await Promise.all(
+			['2026-10-03', '2026-10-03', '2026-10-04', '2026-10-05'].map((day) =>
+				source.pickAnswer(dailyRandom(day))
+			)
+		);
+		expect(picks[0]).toBe(picks[1]);
+		expect(new Set(picks).size).toBeGreaterThan(1);
 	});
 
 	it('only fetches the index and one shard', async () => {

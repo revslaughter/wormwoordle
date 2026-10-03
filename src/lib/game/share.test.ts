@@ -21,6 +21,15 @@ describe('buildShareText', () => {
 		expect(buildShareText(['worms'], 'worm').split('\n')[2]).toBe('🟩🟩🟩🟩⬛⬅️');
 	});
 
+	it('includes the date for the word of the day', () => {
+		expect(buildShareText(['worm'], 'worm', '2026-10-03').split('\n')[0]).toBe(
+			'WormWord 👹 2026-10-03 1 guess'
+		);
+		expect(buildShareText(['cat'], 'worm', '2026-10-03').split('\n')[0]).toBe(
+			'WormWord 👹 2026-10-03 stumped after 1 guesses 💀'
+		);
+	});
+
 	it('says "guess" for a single guess', () => {
 		expect(buildShareText(['worm'], 'worm').split('\n')[0]).toBe('WormWord 👹 1 guess');
 	});
