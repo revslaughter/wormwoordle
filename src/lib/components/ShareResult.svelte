@@ -26,6 +26,10 @@
 	pre {
 		font-family: inherit;
 		line-height: 1.4;
+		/* The parent centres its text; keep the rows aligned with each other, with the block centred */
+		text-align: left;
+		width: fit-content;
+		margin-inline: auto;
 		user-select: all;
 	}
 	button {
