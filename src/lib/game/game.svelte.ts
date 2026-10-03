@@ -1,6 +1,7 @@
 import { analyzeGuess } from './analyze';
 import type { LetterStatus } from './analyze';
 import type { WordSource } from './words';
+import { noStore, type GameStore } from './savedGame';
 import { KEYBOARD_ROWS, MAX_GUESSES, MAX_LETTERS } from './settings';
 
 export type GameStatus = 'playing' | 'win' | 'lose';
@@ -45,19 +46,36 @@ export class Game {
 	});
 
 	#words: WordSource;
+	#store: GameStore;
 	#checking = false;
 	#loads = 0;
 
-	constructor(words: WordSource) {
+	constructor(words: WordSource, store: GameStore = noStore) {
 		this.#words = words;
+		this.#store = store;
 	}
 
-	/** Loads an answer. Call once the game is on screen (it fetches the word list). */
+	#save() {
+		this.#store.save({ answer: this.answer, guesses: $state.snapshot(this.guesses) });
+	}
+
+	/**
+	 * Picks up the saved game, or loads a new answer if there isn't one.
+	 * Call once the game is on screen (it reads storage and fetches the word list).
+	 */
 	start = async () => {
 		const load = ++this.#loads;
+		const saved = this.#store.load();
+		if (saved) {
+			this.answer = saved.answer;
+			this.guesses = saved.guesses;
+			return;
+		}
 		try {
 			const answer = await this.#words.pickAnswer();
-			if (load === this.#loads) this.answer = answer;
+			if (load !== this.#loads) return;
+			this.answer = answer;
+			this.#save();
 		} catch {
 			if (load === this.#loads) this.notice = "Couldn't load the word list. Reload to try again.";
 		}
@@ -83,6 +101,7 @@ export class Game {
 			if (this.answer !== answer || this.activeGuess !== guess) return;
 			if (valid) {
 				this.guesses.push(guess);
+				this.#save();
 				this.activeGuess = '';
 			} else {
 				this.notice = 'Not in the word list';
@@ -114,6 +133,7 @@ export class Game {
 		this.guesses = [];
 		this.activeGuess = '';
 		this.notice = '';
+		this.#store.clear();
 		await this.start();
 	};
 }

@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import wordList from '../../../data/2of12inf.json';
 import { Game } from './game.svelte';
 import type { WordSource } from './words';
+import type { GameStore, SavedGame } from './savedGame';
 
 const words = new Set(wordList);
 
@@ -26,6 +27,17 @@ const type = (game: Game, text: string) => [...text].forEach((c) => game.pressKe
 const guess = async (game: Game, word: string) => {
 	type(game, word);
 	await game.pressKey('Enter');
+};
+
+/** A store that keeps the saved game in memory, so tests can look at it. */
+const memoryStore = (initial: SavedGame | null = null) => {
+	const store: GameStore & { saved: SavedGame | null } = {
+		saved: initial,
+		load: () => store.saved,
+		save: (game) => void (store.saved = game),
+		clear: () => void (store.saved = null)
+	};
+	return store;
 };
 
 let game: Game;
@@ -275,6 +287,67 @@ describe('losing', () => {
 		await game.reset();
 		expect(game.status).toBe('playing');
 		expect(game.guesses).toEqual([]);
+	});
+});
+
+describe('saving', () => {
+	it('saves the answer once it has loaded', async () => {
+		const store = memoryStore();
+		await new Game(fakeSource(['worm']), store).start();
+		expect(store.saved).toEqual({ answer: 'worm', guesses: [] });
+	});
+
+	it('saves each accepted guess, but not rejected ones', async () => {
+		const store = memoryStore();
+		const saving = new Game(fakeSource(['worm']), store);
+		await saving.start();
+		await guess(saving, 'cat');
+		await guess(saving, 'zzzzzz');
+		expect(store.saved).toEqual({ answer: 'worm', guesses: ['cat'] });
+	});
+
+	it('carries on a saved game instead of picking an answer', async () => {
+		const store = memoryStore({ answer: 'dog', guesses: ['cat'] });
+		const source = fakeSource(['worm']);
+		const picked = vi.spyOn(source, 'pickAnswer');
+		const resumed = new Game(source, store);
+		await resumed.start();
+		expect(picked).not.toHaveBeenCalled();
+		expect(resumed.ready).toBe(true);
+		expect(resumed.answer).toBe('dog');
+		expect(resumed.guesses).toEqual(['cat']);
+		await guess(resumed, 'dog');
+		expect(resumed.status).toBe('win');
+	});
+
+	it('shows a finished game as finished', async () => {
+		const over = ['cat', 'dog', 'the', 'and', 'not', 'but', 'you'];
+		const resumed = new Game(fakeSource([]), memoryStore({ answer: 'worm', guesses: over }));
+		await resumed.start();
+		expect(resumed.status).toBe('lose');
+	});
+
+	it('forgets the old game on reset and saves the new one', async () => {
+		const store = memoryStore();
+		const saving = new Game(fakeSource(['worm', 'dog']), store);
+		await saving.start();
+		await guess(saving, 'cat');
+		await saving.reset();
+		expect(store.saved).toEqual({ answer: 'dog', guesses: [] });
+	});
+
+	it('does not save when the answer fails to load', async () => {
+		const store = memoryStore();
+		await new Game(
+			{
+				isValid: async () => true,
+				pickAnswer: async () => {
+					throw new Error('offline');
+				}
+			},
+			store
+		).start();
+		expect(store.saved).toBeNull();
 	});
 });
 

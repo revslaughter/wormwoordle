@@ -11,13 +11,17 @@
 
 	import { Game } from '#lib/game/game.svelte';
 	import { wordSource } from '#lib/game/wordSource';
+	import { createGameStore } from '#lib/game/savedGame';
 	import { lengthHint } from '#lib/game/analyze';
 	import { buildShareText } from '#lib/game/share';
 	import { MAX_GUESSES, MAX_LETTERS } from '#lib/game/settings';
 
-	const game = new Game(wordSource);
+	const game = new Game(
+		wordSource,
+		createGameStore(() => localStorage)
+	);
 
-	// Load the answer in the browser only; the page is also prerendered at build time
+	// Load the saved game or answer in the browser only; the page is also prerendered at build time
 	onMount(game.start);
 
 	let showRules = $state(false);
