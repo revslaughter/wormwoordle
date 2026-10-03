@@ -3,7 +3,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-	plugins: [sveltekit({ adapter: adapter() })],
+	plugins: [sveltekit({ adapter: adapter(), paths: { base: process.env.BASE_PATH ?? '' } })],
 	test: {
 		include: ['src/**/*.test.ts'],
 		environment: 'node'
