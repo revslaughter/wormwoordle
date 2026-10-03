@@ -4,9 +4,7 @@
 // Run with `npm run words` after changing the word list or the length limits.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
-// Keep in sync with src/lib/game/settings.ts (words.test.ts checks the shards match)
-const MIN_LETTERS = 3;
-const MAX_LETTERS = 10;
+import { MIN_LETTERS, MAX_LETTERS } from '../src/lib/game/settings.ts';
 
 const source = JSON.parse(readFileSync(new URL('../data/2of12inf.json', import.meta.url), 'utf8'));
 const outDir = new URL('../static/words/', import.meta.url);
