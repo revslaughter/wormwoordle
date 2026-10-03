@@ -1,12 +1,13 @@
 <script>
 	export let char = '';
-	export let handleKey;
+	/** @type {(key: string) => void} */
+	export let onKey;
 	export let status = '';
 </script>
 
 <div
 	class={(char === '⏎' || char === '⌫' ? 'key wider' : 'key') + ' ' + status}
-	on:click={() => handleKey(char)}
+	on:click={() => onKey(char)}
 >
 	{char}
 </div>

@@ -1,6 +1,6 @@
 <script>
 	import { fade } from 'svelte/transition';
-	import SETTINGS from '$lib/util/store/settings';
+	import { MIN_LETTERS, MAX_LETTERS, MAX_GUESSES } from '$lib/game/settings';
 	import MenuClose from './MenuClose.svelte';
 
 	export let onClose;
@@ -12,8 +12,8 @@
 		<h1>Rules</h1>
 		<h2>Find the WORMWORD</h2>
 		<ul>
-			<li>The answer will be between 3 and 10 letters</li>
-			<li>You have seven guesses!</li>
+			<li>The answer will be between {MIN_LETTERS} and {MAX_LETTERS} letters</li>
+			<li>You have {MAX_GUESSES} guesses!</li>
 		</ul>
 	</div>
 </div>
@@ -62,12 +62,5 @@
 		position: absolute;
 		top: 6px;
 		right: 12px;
-	}
-
-	.right {
-		background-color: rgb(95, 190, 95);
-	}
-	.close {
-		background-color: rgb(236, 236, 83);
 	}
 </style>
