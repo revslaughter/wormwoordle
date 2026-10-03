@@ -26,10 +26,8 @@
 	pre {
 		font-family: inherit;
 		line-height: 1.4;
-		/* The parent centres its text; keep the rows aligned with each other, with the block centred */
+		/* The parent centres its text; the share text should line up with the grid's left edge */
 		text-align: left;
-		width: fit-content;
-		margin-inline: auto;
 		user-select: all;
 	}
 	button {
