@@ -13,6 +13,7 @@
 	import { wordSource } from '#lib/game/wordSource';
 	import { lengthHint } from '#lib/game/analyze';
 	import { buildShareText } from '#lib/game/share';
+	import { MAX_GUESSES, MAX_LETTERS } from '#lib/game/settings';
 
 	const game = new Game(wordSource);
 
@@ -41,8 +42,8 @@
 <div class="intro">
 	<div class="menuButton"><MenuButton onMenuOpen={() => (showRules = !showRules)} /></div>
 	<h1>WormWord 👹</h1>
-	<p>Take a guess, up to 10 letters!</p>
-	<p>You get seven guesses.</p>
+	<p>Take a guess, up to {MAX_LETTERS} letters!</p>
+	<p>You get {MAX_GUESSES} guesses.</p>
 	<p>We'll let you know if it's too long or too short 😉</p>
 </div>
 
