@@ -1,0 +1,1 @@
+import{B as e,U as t,V as n,n as r}from"../chunks/DnzSSurh.js";import{n as i}from"../chunks/BMBH1KCT.js";import{t as a}from"../chunks/DM_dhuz6.js";import{t as o}from"../chunks/BDqc6c-q.js";t();function s(t,s){n(s,!1),r(),a(t,{onClose:()=>o(i(`/`))}),e()}export{s as component};
