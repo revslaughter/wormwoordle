@@ -1,9 +1,9 @@
-<script>
-	export let onMenuOpen;
+<script lang="ts">
+	let { onMenuOpen }: { onMenuOpen: () => void } = $props();
 </script>
 
 <svg
-	on:click={onMenuOpen}
+	onclick={onMenuOpen}
 	xmlns="http://www.w3.org/2000/svg"
 	x="0px"
 	y="0px"

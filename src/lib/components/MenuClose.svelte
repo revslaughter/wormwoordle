@@ -1,9 +1,9 @@
-<script>
-	export let onClose;
+<script lang="ts">
+	let { onClose }: { onClose?: () => void } = $props();
 </script>
 
 <svg
-	on:click={onClose}
+	onclick={onClose}
 	xmlns="http://www.w3.org/2000/svg"
 	x="0px"
 	y="0px"

@@ -1,17 +1,20 @@
-<script>
+<script lang="ts">
 	import { slide } from 'svelte/transition';
+	import type { LetterStatus } from '#lib/game/analyze';
 	import Key from './Key.svelte';
 
-	/** @type {{ char: string, status: string }[][]} */
-	export let rows = [];
-	/** @type {(key: string) => void} */
-	export let onKey;
+	interface Props {
+		rows?: { char: string; status: LetterStatus }[][];
+		onKey: (key: string) => void;
+	}
+
+	let { rows = [], onKey }: Props = $props();
 </script>
 
-<div class="keyboard" transition:slide={{ duration: 300 }}>
-	{#each rows as row}
+<div class="keyboard" transition:slide|global={{ duration: 300 }}>
+	{#each rows as row, i (i)}
 		<div class="keebRow">
-			{#each row as { char, status }}
+			{#each row as { char, status } (char)}
 				<Key {char} {status} {onKey} />
 			{/each}
 		</div>

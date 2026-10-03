@@ -1,12 +1,12 @@
-<script>
+<script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { MIN_LETTERS, MAX_LETTERS, MAX_GUESSES } from '$lib/game/settings';
+	import { MIN_LETTERS, MAX_LETTERS, MAX_GUESSES } from '#lib/game/settings';
 	import MenuClose from './MenuClose.svelte';
 
-	export let onClose;
+	let { onClose }: { onClose?: () => void } = $props();
 </script>
 
-<div class="container" transition:fade={{ duration: 100 }}>
+<div class="container" transition:fade|global={{ duration: 100 }}>
 	<div class="rules">
 		<div class="closeButton"><MenuClose {onClose} /></div>
 		<h1>Rules</h1>
