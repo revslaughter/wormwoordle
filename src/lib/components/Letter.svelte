@@ -41,21 +41,21 @@
 	}
 
 	.new {
-		background-color: rgb(218, 218, 218);
+		background-color: var(--tile-new);
 	}
 	.close {
-		background-color: rgb(236, 236, 83);
+		background-color: var(--tile-close);
 	}
 	.wrong {
-		background-color: rgb(65, 65, 65);
-		color: whitesmoke;
+		background-color: var(--tile-wrong);
+		color: var(--tile-wrong-text);
 	}
 	.right {
-		background-color: rgb(95, 190, 95);
+		background-color: var(--tile-right);
 	}
 	.dead {
 		box-shadow: none;
-		background-color: rgb(233, 233, 233);
-		border: 1px solid rgb(218, 218, 218);
+		background-color: var(--tile-dead);
+		border: 1px solid var(--tile-dead-border);
 	}
 </style>

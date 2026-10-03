@@ -8,17 +8,25 @@
 	}
 
 	let { char = '', onKey, status = 'new' }: Props = $props();
+
+	const LABELS: Record<string, string> = { '⏎': 'Enter', '⌫': 'Delete' };
 </script>
 
-<div
+<!-- pointerdown is cancelled so a mouse click doesn't leave the key focused,
+	which would make a later physical Enter press it again -->
+<button
+	type="button"
 	class={(char === '⏎' || char === '⌫' ? 'key wider' : 'key') + ' ' + status}
+	aria-label={LABELS[char]}
+	onpointerdown={(event) => event.preventDefault()}
 	onclick={() => onKey(char)}
 >
 	{char}
-</div>
+</button>
 
 <style>
 	.key {
+		cursor: pointer;
 		flex-basis: 2rem;
 		display: flex;
 
@@ -35,25 +43,25 @@
 		font-family: Helvetica, 'Segoe UI', sans-serif;
 		font-size: 12pt;
 
-		background-color: rgb(152, 172, 192);
+		background-color: var(--key);
 	}
 	.wider {
 		flex-basis: 4rem;
 		font-size: 14pt;
 	}
 	.close {
-		background-color: rgb(236, 236, 83);
+		background-color: var(--tile-close);
 	}
 	.wrong {
-		background-color: rgb(65, 65, 65);
-		color: whitesmoke;
+		background-color: var(--tile-wrong);
+		color: var(--tile-wrong-text);
 	}
 	.right {
-		background-color: rgb(95, 190, 95);
+		background-color: var(--tile-right);
 	}
 	.dead {
 		box-shadow: none;
-		background-color: rgb(233, 233, 233);
-		border: 1px solid rgb(218, 218, 218);
+		background-color: var(--tile-dead);
+		border: 1px solid var(--tile-dead-border);
 	}
 </style>

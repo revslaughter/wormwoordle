@@ -1,38 +1,143 @@
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
-import { wordList, isValidWord, pickAnswer } from './words';
+import wordList from '../../../data/2of12inf.json';
 import { MIN_LETTERS, MAX_LETTERS } from './settings';
+import { createWordSource } from './words';
 
-describe('word list', () => {
-	it('only contains words within the length limits', () => {
-		expect(wordList.length).toBeGreaterThan(0);
-		expect(wordList.every((w) => w.length >= MIN_LETTERS && w.length <= MAX_LETTERS)).toBe(true);
+const shardDir = new URL('../../../static/words/', import.meta.url);
+const readShard = (file: string) => readFileSync(new URL(file, shardDir), 'utf8');
+
+/** A fetcher that reads the generated shards from disk and records what was asked for. */
+const diskFetcher = () => {
+	const requests: string[] = [];
+	return {
+		requests,
+		fetchText: async (file: string) => {
+			requests.push(file);
+			return readShard(file);
+		}
+	};
+};
+
+const inRange = (w: string) => w.length >= MIN_LETTERS && w.length <= MAX_LETTERS;
+
+describe('isValid', () => {
+	const { fetchText } = diskFetcher();
+	const source = createWordSource(fetchText);
+
+	it('accepts real words', async () => {
+		expect(await source.isValid('worm')).toBe(true);
+		expect(await source.isValid('aardvark')).toBe(true);
 	});
 
-	it('excludes words that are too short or too long', () => {
-		expect(wordList.some((w) => w.length < MIN_LETTERS)).toBe(false);
-		expect(wordList.some((w) => w.length > MAX_LETTERS)).toBe(false);
+	it('rejects non-words', async () => {
+		expect(await source.isValid('zzzzzz')).toBe(false);
+		expect(await source.isValid('wormz')).toBe(false);
+	});
+
+	it('rejects empty, too short, too long and non-letter input', async () => {
+		for (const word of ['', 'a', 'ab', 'abandonment', 'WORM', 'wo-m', "don't", '../x']) {
+			expect(await source.isValid(word), word).toBe(false);
+		}
 	});
 });
 
-describe('isValidWord', () => {
-	it('accepts real words', () => {
-		expect(isValidWord('worm')).toBe(true);
-		expect(isValidWord('aardvark')).toBe(true);
+describe('loading', () => {
+	it('does not fetch anything for input that cannot be a word', async () => {
+		const { fetchText, requests } = diskFetcher();
+		const source = createWordSource(fetchText);
+		await source.isValid('');
+		await source.isValid('../etc');
+		expect(requests).toEqual([]);
 	});
 
-	it('rejects non-words and empty strings', () => {
-		expect(isValidWord('zzzzzz')).toBe(false);
-		expect(isValidWord('')).toBe(false);
+	it('fetches only the index and the one shard it needs, and remembers them', async () => {
+		const { fetchText, requests } = diskFetcher();
+		const source = createWordSource(fetchText);
+		await source.isValid('sabotage');
+		await source.isValid('saboteur');
+		await source.isValid('sabbaths');
+		expect(requests).toEqual(['index.json', '8-s.txt']);
 	});
 
-	it('rejects words outside the length limits', () => {
-		expect(isValidWord('a')).toBe(false);
-		expect(isValidWord('abandonment')).toBe(false); // 11 letters
+	it('shares one request between lookups made at the same time', async () => {
+		const { fetchText, requests } = diskFetcher();
+		const source = createWordSource(fetchText);
+		await Promise.all([source.isValid('worm'), source.isValid('word'), source.isValid('wore')]);
+		expect(requests).toEqual(['index.json', '4-w.txt']);
+	});
+
+	it('does not fetch a shard the index says does not exist', async () => {
+		const { fetchText, requests } = diskFetcher();
+		const source = createWordSource(fetchText);
+		// there are no 4-letter words starting with x
+		expect(await source.isValid('xxxx')).toBe(false);
+		expect(requests).toEqual(['index.json']);
+	});
+
+	it('retries after a failed fetch', async () => {
+		let fail = true;
+		const source = createWordSource(async (file) => {
+			if (fail) throw new Error('offline');
+			return readShard(file);
+		});
+		await expect(source.isValid('worm')).rejects.toThrow('offline');
+		fail = false;
+		expect(await source.isValid('worm')).toBe(true);
 	});
 });
 
 describe('pickAnswer', () => {
-	it('always picks a word from the list, including at the extremes', () => {
-		for (let i = 0; i < 1000; i++) expect(isValidWord(pickAnswer())).toBe(true);
+	const list = new Set(wordList);
+
+	it('picks a word from the list', async () => {
+		const source = createWordSource(diskFetcher().fetchText);
+		for (let i = 0; i < 50; i++) expect(list.has(await source.pickAnswer())).toBe(true);
+	});
+
+	it('can reach the first and last word', async () => {
+		const index = JSON.parse(readShard('index.json')) as Record<string, number>;
+		const keys = Object.keys(index);
+		const firstShard = readShard(`${keys[0]}.txt`).trim().split('\n');
+		const lastShard = readShard(`${keys[keys.length - 1]}.txt`)
+			.trim()
+			.split('\n');
+
+		const first = createWordSource(diskFetcher().fetchText, () => 0);
+		expect(await first.pickAnswer()).toBe(firstShard[0]);
+		const last = createWordSource(diskFetcher().fetchText, () => 0.999999999);
+		expect(await last.pickAnswer()).toBe(lastShard[lastShard.length - 1]);
+	});
+
+	it('only fetches the index and one shard', async () => {
+		const { fetchText, requests } = diskFetcher();
+		await createWordSource(fetchText).pickAnswer();
+		expect(requests).toHaveLength(2);
+		expect(requests[0]).toBe('index.json');
+	});
+});
+
+// The shards are generated by `npm run words`; these fail if they've drifted from the source list
+describe('generated shards', () => {
+	const expected = new Map<string, string[]>();
+	for (const word of wordList.filter(inRange)) {
+		const key = `${word.length}-${word[0]}`;
+		expected.set(key, [...(expected.get(key) ?? []), word]);
+	}
+
+	it('hold exactly the words in the source list, in the right shards', () => {
+		for (const [key, words] of expected) {
+			expect(readShard(`${key}.txt`).trim().split('\n'), key).toEqual(words);
+		}
+	});
+
+	it('have an index that matches them', () => {
+		const index = JSON.parse(readShard('index.json')) as Record<string, number>;
+		expect(index).toEqual(Object.fromEntries([...expected].map(([key, w]) => [key, w.length])));
+	});
+
+	it('have no stray files', () => {
+		const files = readdirSync(shardDir).sort();
+		expect(files).toEqual([...[...expected.keys()].map((k) => `${k}.txt`), 'index.json'].sort());
 	});
 });
