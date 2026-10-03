@@ -57,3 +57,9 @@ The tests check that the committed shards match the source list, so they can't d
 (The length limits are also in `scripts/build-words.mjs`; keep the two in step.)
 
 The word list is [2of12inf](http://wordlist.aspell.net/12dicts/) from the 12dicts project.
+
+## Deploying to GitHub Pages
+
+The site is served from the `gh-pages` branch at `/wormwoordle/`. To redeploy, build with the base path
+(`BASE_PATH=/wormwoordle npm run build`), then replace the contents of `gh-pages` with `build/`
+(plus an empty `.nojekyll` file, since GitHub Pages ignores `_app`'s underscore folder otherwise).
