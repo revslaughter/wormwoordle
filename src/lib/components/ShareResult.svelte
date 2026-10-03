@@ -1,8 +1,12 @@
-<script>
-	/** The text to show and copy. */
-	export let text = '';
+<script lang="ts">
+	interface Props {
+		/** The text to show and copy. */
+		text?: string;
+	}
 
-	let copied = false;
+	let { text = '' }: Props = $props();
+
+	let copied = $state(false);
 
 	const copy = async () => {
 		try {
@@ -16,7 +20,7 @@
 </script>
 
 <pre>{text}</pre>
-<button on:click={copy}>{copied ? 'COPIED ✔' : 'COPY RESULT 📋'}</button>
+<button onclick={copy}>{copied ? 'COPIED ✔' : 'COPY RESULT 📋'}</button>
 
 <style>
 	pre {

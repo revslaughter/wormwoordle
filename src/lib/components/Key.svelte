@@ -1,13 +1,18 @@
-<script>
-	export let char = '';
-	/** @type {(key: string) => void} */
-	export let onKey;
-	export let status = '';
+<script lang="ts">
+	import type { LetterStatus } from '#lib/game/analyze';
+
+	interface Props {
+		char?: string;
+		onKey: (key: string) => void;
+		status?: LetterStatus;
+	}
+
+	let { char = '', onKey, status = 'new' }: Props = $props();
 </script>
 
 <div
 	class={(char === '⏎' || char === '⌫' ? 'key wider' : 'key') + ' ' + status}
-	on:click={() => onKey(char)}
+	onclick={() => onKey(char)}
 >
 	{char}
 </div>

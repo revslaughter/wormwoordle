@@ -1,16 +1,21 @@
-<script>
-	export let char = '';
+<script lang="ts">
 	import { fly } from 'svelte/transition';
+	import type { LetterStatus } from '#lib/game/analyze';
 
-	/** @type {'dead' | 'new' | 'close' | 'wrong' | 'right'} */
-	export let status = 'dead';
-
-	if (char === '') {
-		status = 'dead';
+	interface Props {
+		char?: string;
+		status?: LetterStatus | 'dead';
 	}
+
+	let { char = '', status = 'dead' }: Props = $props();
+
+	// An empty tile is always dead
+	const tileStatus = $derived(char === '' ? 'dead' : status);
 </script>
 
-<div class="letterTile {status}" in:fly={{ delay: 50, duration: 200, y: 50 }}>{char}</div>
+<div class="letterTile {tileStatus}" in:fly|global={{ delay: 50, duration: 200, y: 50 }}>
+	{char}
+</div>
 
 <style>
 	.letterTile {

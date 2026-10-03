@@ -1,7 +1,5 @@
-/**
- * @typedef {'new' | 'close' | 'wrong' | 'right'} LetterStatus
- * @typedef {{ char: string, status: LetterStatus }} AnalyzedLetter
- */
+export type LetterStatus = 'new' | 'close' | 'wrong' | 'right';
+export type AnalyzedLetter = { char: string; status: LetterStatus };
 
 /**
  * Scores each letter of a guess against the answer, wordle-style.
@@ -12,20 +10,14 @@
  * - `wrong`: anything else.
  *
  * The guess and answer may be different lengths.
- *
- * @param {string} guess
- * @param {string} answer
- * @returns {AnalyzedLetter[]}
  */
-export const analyzeGuess = (guess, answer) => {
+export const analyzeGuess = (guess: string, answer: string): AnalyzedLetter[] => {
 	const letters = [...guess];
 
-	/** @type {AnalyzedLetter[]} */
-	const result = letters.map((char) => ({ char, status: 'wrong' }));
+	const result: AnalyzedLetter[] = letters.map((char) => ({ char, status: 'wrong' }));
 
 	// Answer letters not claimed by an exact match, as counts
-	/** @type {Record<string, number>} */
-	const unclaimed = {};
+	const unclaimed: Record<string, number> = {};
 	[...answer].forEach((char, i) => {
 		if (letters[i] !== char) unclaimed[char] = (unclaimed[char] ?? 0) + 1;
 	});
@@ -42,14 +34,10 @@ export const analyzeGuess = (guess, answer) => {
 	return result;
 };
 
-/**
- * Hint about how the length of a guess compares to the answer.
- *
- * @param {string} guess
- * @param {string} answer
- * @returns {'short' | 'long' | 'same'}
- */
-export const lengthHint = (guess, answer) => {
+export type LengthHint = 'short' | 'long' | 'same';
+
+/** Hint about how the length of a guess compares to the answer. */
+export const lengthHint = (guess: string, answer: string): LengthHint => {
 	if (guess.length < answer.length) return 'short';
 	if (guess.length > answer.length) return 'long';
 	return 'same';
