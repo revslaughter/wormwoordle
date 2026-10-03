@@ -78,6 +78,33 @@ describe('submitting', () => {
 	});
 });
 
+describe('notice', () => {
+	it('says when a guess is not a word, and keeps the guess', () => {
+		guess(game, 'zzzzzz');
+		expect(game.notice).toBe('Not in the word list');
+		expect(game.activeGuess).toBe('zzzzzz');
+	});
+
+	it('clears on the next key press', () => {
+		guess(game, 'zzzzzz');
+		game.pressKey('Backspace');
+		expect(game.notice).toBe('');
+	});
+
+	it('stays empty for a valid guess or an empty submit', () => {
+		game.pressKey('Enter');
+		expect(game.notice).toBe('');
+		guess(game, 'cat');
+		expect(game.notice).toBe('');
+	});
+
+	it('clears on reset', () => {
+		guess(game, 'zzzzzz');
+		game.reset();
+		expect(game.notice).toBe('');
+	});
+});
+
 describe('winning', () => {
 	it('is playing until the answer is guessed, then wins', () => {
 		expect(game.status).toBe('playing');

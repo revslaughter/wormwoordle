@@ -8,17 +8,25 @@
 	}
 
 	let { char = '', onKey, status = 'new' }: Props = $props();
+
+	const LABELS: Record<string, string> = { '⏎': 'Enter', '⌫': 'Delete' };
 </script>
 
-<div
+<!-- pointerdown is cancelled so a mouse click doesn't leave the key focused,
+	which would make a later physical Enter press it again -->
+<button
+	type="button"
 	class={(char === '⏎' || char === '⌫' ? 'key wider' : 'key') + ' ' + status}
+	aria-label={LABELS[char]}
+	onpointerdown={(event) => event.preventDefault()}
 	onclick={() => onKey(char)}
 >
 	{char}
-</div>
+</button>
 
 <style>
 	.key {
+		cursor: pointer;
 		flex-basis: 2rem;
 		display: flex;
 

@@ -16,13 +16,22 @@
 
 	let showRules = $state(false);
 
+	/** Physical keyboard input. Browser shortcuts and the rules modal take priority over the game. */
+	const onKeydown = (event: KeyboardEvent) => {
+		if (showRules || event.metaKey || event.ctrlKey || event.altKey) return;
+		// Enter or Space on a focused button should press that button, not also submit a guess
+		const onButton = event.target instanceof Element && event.target.closest('button');
+		if (onButton && (event.key === 'Enter' || event.key === ' ')) return;
+		game.pressKey(event.key);
+	};
+
 	const shareText = $derived(buildShareText(game.guesses, game.answer));
 	const activeLetters = $derived(
 		[...game.activeGuess].map((char) => ({ char, status: 'new' as const }))
 	);
 </script>
 
-<svelte:window onkeydown={(event) => game.pressKey(event.key)} />
+<svelte:window onkeydown={onKeydown} />
 
 <div class="intro">
 	<div class="menuButton"><MenuButton onMenuOpen={() => (showRules = !showRules)} /></div>
@@ -37,6 +46,8 @@
 {#if showRules}
 	<RulesModal onClose={() => (showRules = false)} />
 {/if}
+
+<p class="notice" role="status">{game.notice}</p>
 
 <div id="Game">
 	{#each game.analyzedGuesses as letters, tryCount (tryCount)}
@@ -87,6 +98,12 @@
 		text-align: right;
 		margin-top: 7px;
 		margin-right: 7px;
+	}
+	.notice {
+		min-height: 1.5em;
+		margin: 0 0 0.5em;
+		text-align: center;
+		font-weight: bold;
 	}
 	.winner,
 	.loser {

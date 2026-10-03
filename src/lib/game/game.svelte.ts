@@ -17,6 +17,9 @@ export class Game {
 	guesses = $state<string[]>([]);
 	activeGuess = $state('');
 
+	/** Feedback about the last action, e.g. a rejected guess. Cleared on the next key press. */
+	notice = $state('');
+
 	analyzedGuesses = $derived(this.guesses.map((guess) => analyzeGuess(guess, this.answer)));
 
 	status = $derived<GameStatus>(
@@ -47,7 +50,11 @@ export class Game {
 
 	/** Submits the active guess, if it's a real word. */
 	#submit() {
-		if (!isValidWord(this.activeGuess)) return;
+		if (this.activeGuess === '') return;
+		if (!isValidWord(this.activeGuess)) {
+			this.notice = 'Not in the word list';
+			return;
+		}
 		this.guesses.push(this.activeGuess);
 		this.activeGuess = '';
 	}
@@ -59,6 +66,7 @@ export class Game {
 	 */
 	pressKey = (key: string) => {
 		if (this.status !== 'playing') return;
+		this.notice = '';
 		if (key === 'Enter' || key === '⏎') this.#submit();
 		else if (key === 'Backspace' || key === '⌫') this.#backspace();
 		else if (/^[a-z]$/i.test(key)) this.#typeLetter(key.toLowerCase());
@@ -68,5 +76,6 @@ export class Game {
 		this.answer = pickAnswer();
 		this.guesses = [];
 		this.activeGuess = '';
+		this.notice = '';
 	};
 }

@@ -4,12 +4,25 @@
 	import MenuClose from './MenuClose.svelte';
 
 	let { onClose }: { onClose?: () => void } = $props();
+
+	let dialog: HTMLElement | undefined = $state();
+
+	// Move focus into the dialog so keyboard users aren't left on the page behind it
+	$effect(() => dialog?.querySelector('button')?.focus());
 </script>
 
+<svelte:window onkeydown={(event) => event.key === 'Escape' && onClose?.()} />
+
 <div class="container" transition:fade|global={{ duration: 100 }}>
-	<div class="rules">
+	<div
+		class="rules"
+		bind:this={dialog}
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="rules-title"
+	>
 		<div class="closeButton"><MenuClose {onClose} /></div>
-		<h1>Rules</h1>
+		<h1 id="rules-title">Rules</h1>
 		<h2>Find the WORMWORD</h2>
 		<ul>
 			<li>The answer will be between {MIN_LETTERS} and {MAX_LETTERS} letters</li>

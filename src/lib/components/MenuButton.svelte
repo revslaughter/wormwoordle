@@ -2,16 +2,28 @@
 	let { onMenuOpen }: { onMenuOpen: () => void } = $props();
 </script>
 
-<svg
-	onclick={onMenuOpen}
-	xmlns="http://www.w3.org/2000/svg"
-	x="0px"
-	y="0px"
-	width="24"
-	height="24"
-	viewBox="0 0 50 50"
-	style=" fill:#000000;"
-	><path
-		d="M 0 9 L 0 11 L 50 11 L 50 9 Z M 0 24 L 0 26 L 50 26 L 50 24 Z M 0 39 L 0 41 L 50 41 L 50 39 Z"
-	/>
-</svg>
+<button type="button" aria-label="Open rules" onclick={onMenuOpen}>
+	<svg
+		aria-hidden="true"
+		xmlns="http://www.w3.org/2000/svg"
+		x="0px"
+		y="0px"
+		width="24"
+		height="24"
+		viewBox="0 0 50 50"
+		style=" fill:#000000;"
+		><path
+			d="M 0 9 L 0 11 L 50 11 L 50 9 Z M 0 24 L 0 26 L 50 26 L 50 24 Z M 0 39 L 0 41 L 50 41 L 50 39 Z"
+		/>
+	</svg>
+</button>
+
+<style>
+	button {
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		line-height: 0;
+	}
+</style>
