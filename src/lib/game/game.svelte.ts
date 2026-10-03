@@ -1,7 +1,8 @@
 import { analyzeGuess } from './analyze';
 import type { LetterStatus } from './analyze';
 import type { WordSource } from './words';
-import { noStore, type GameStore } from './savedGame';
+import { noStore, type GameMode, type GameStore } from './savedGame';
+import { dailyRandom, dateKey } from './daily';
 import { KEYBOARD_ROWS, MAX_GUESSES, MAX_LETTERS } from './settings';
 
 export type GameStatus = 'playing' | 'win' | 'lose';
@@ -16,6 +17,10 @@ const STATUS_RANK: Record<LetterStatus, number> = { new: 0, wrong: 1, close: 2, 
 export class Game {
 	/** The word to find. Empty until `start()` has loaded one. */
 	answer = $state('');
+	/** Whether this is the word of the day or a random practice word. */
+	mode = $state<GameMode>('daily');
+	/** The date this game belongs to (see `dateKey`). */
+	day = $state('');
 	guesses = $state<string[]>([]);
 	activeGuess = $state('');
 
@@ -35,6 +40,11 @@ export class Game {
 				: 'playing'
 	);
 
+	/** Losing the word of the day ends it until tomorrow; any other finished game can be replayed. */
+	canPlayAgain = $derived(
+		this.status === 'win' || (this.status === 'lose' && this.mode === 'practice')
+	);
+
 	keyboardStatus = $derived.by(() => {
 		const best: Record<string, LetterStatus> = {};
 		for (const { char, status } of this.analyzedGuesses.flat()) {
@@ -47,39 +57,57 @@ export class Game {
 
 	#words: WordSource;
 	#store: GameStore;
+	#today: () => string;
 	#checking = false;
 	#loads = 0;
 
-	constructor(words: WordSource, store: GameStore = noStore) {
+	constructor(words: WordSource, store: GameStore = noStore, today: () => string = dateKey) {
 		this.#words = words;
 		this.#store = store;
+		this.#today = today;
 	}
 
 	#save() {
-		this.#store.save({ answer: this.answer, guesses: $state.snapshot(this.guesses) });
+		this.#store.save({
+			mode: this.mode,
+			day: this.day,
+			answer: this.answer,
+			guesses: $state.snapshot(this.guesses)
+		});
 	}
 
 	/**
-	 * Picks up the saved game, or loads a new answer if there isn't one.
+	 * Picks up today's saved game, or loads a new one if there isn't one: the word of the day.
 	 * Call once the game is on screen (it reads storage and fetches the word list).
 	 */
 	start = async () => {
-		const load = ++this.#loads;
+		const today = this.#today();
 		const saved = this.#store.load();
-		if (saved) {
+		if (saved?.day === today) {
+			++this.#loads;
+			this.mode = saved.mode;
+			this.day = saved.day;
 			this.answer = saved.answer;
 			this.guesses = saved.guesses;
 			return;
 		}
+		await this.#load('daily', today);
+	};
+
+	/** Loads a new answer: the word of `day` for everyone, or a random one for practice. */
+	async #load(mode: GameMode, day: string) {
+		const load = ++this.#loads;
 		try {
-			const answer = await this.#words.pickAnswer();
+			const answer = await this.#words.pickAnswer(mode === 'daily' ? dailyRandom(day) : undefined);
 			if (load !== this.#loads) return;
+			this.mode = mode;
+			this.day = day;
 			this.answer = answer;
 			this.#save();
 		} catch {
 			if (load === this.#loads) this.notice = "Couldn't load the word list. Reload to try again.";
 		}
-	};
+	}
 
 	#typeLetter(letter: string) {
 		this.activeGuess = (this.activeGuess + letter).substring(0, MAX_LETTERS);
@@ -128,12 +156,30 @@ export class Game {
 		else if (/^[a-z]$/i.test(key)) this.#typeLetter(key.toLowerCase());
 	};
 
-	reset = async () => {
+	#clear() {
 		this.answer = '';
 		this.guesses = [];
 		this.activeGuess = '';
 		this.notice = '';
 		this.#store.clear();
-		await this.start();
+	}
+
+	/** Starts a random practice game, once the current one is won (or a practice game is lost). */
+	playAgain = async () => {
+		if (!this.canPlayAgain) return;
+		this.#clear();
+		await this.#load('practice', this.#today());
+	};
+
+	/**
+	 * Moves on to the new word of the day if the date has changed, e.g. when a tab left open
+	 * overnight is looked at again. A practice game in progress is left alone.
+	 */
+	refreshDay = async () => {
+		const today = this.#today();
+		if (this.day === '' || this.day === today) return;
+		if (this.mode === 'practice' && this.status === 'playing') return;
+		this.#clear();
+		await this.#load('daily', today);
 	};
 }

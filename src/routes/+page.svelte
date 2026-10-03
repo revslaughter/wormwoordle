@@ -35,13 +35,15 @@
 		game.pressKey(event.key);
 	};
 
-	const shareText = $derived(buildShareText(game.guesses, game.answer));
+	const shareText = $derived(
+		buildShareText(game.guesses, game.answer, game.mode === 'daily' ? game.day : undefined)
+	);
 	const activeLetters = $derived(
 		[...game.activeGuess].map((char) => ({ char, status: 'new' as const }))
 	);
 </script>
 
-<svelte:window onkeydown={onKeydown} />
+<svelte:window onkeydown={onKeydown} onfocus={game.refreshDay} />
 
 <div class="intro">
 	<div class="menuButton"><MenuButton onMenuOpen={() => (showRules = !showRules)} /></div>
@@ -58,6 +60,9 @@
 {/if}
 
 <p class="notice" role="status">{game.notice}</p>
+{#if game.ready}
+	<p class="mode">{game.mode === 'daily' ? `Word of the day · ${game.day}` : 'Random word'}</p>
+{/if}
 
 <div id="Game">
 	{#each game.analyzedGuesses as letters, tryCount (tryCount)}
@@ -80,7 +85,7 @@
 	<div class="winner">
 		<h2>You're WIN!</h2>
 		<ShareResult text={shareText} />
-		<button onclick={game.reset}>PLAY 👹 AGAIN</button>
+		<button onclick={game.playAgain}>PLAY 👹 AGAIN WITH A RANDOM WORD</button>
 	</div>
 {/if}
 
@@ -90,7 +95,11 @@
 		<p>The word was</p>
 		<AnswerReveal word={game.answer} />
 		<ShareResult text={shareText} />
-		<button onclick={game.reset}>PLAY 👹 AGAIN</button>
+		{#if game.canPlayAgain}
+			<button onclick={game.playAgain}>PLAY 👹 AGAIN</button>
+		{:else}
+			<p>A new word of the day arrives tomorrow.</p>
+		{/if}
 	</div>
 {/if}
 
@@ -108,6 +117,12 @@
 		text-align: right;
 		margin-top: 7px;
 		margin-right: 7px;
+	}
+	.mode {
+		margin: 0 0 0.5em;
+		text-align: center;
+		font-size: small;
+		opacity: 0.7;
 	}
 	.notice {
 		min-height: 1.5em;

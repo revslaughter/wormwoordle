@@ -1,7 +1,13 @@
 import { MIN_LETTERS, MAX_LETTERS, MAX_GUESSES } from './settings';
 
+/** The word of the day (the same for everyone) or a random one for practice. */
+export type GameMode = 'daily' | 'practice';
+
 /** What is kept between visits: enough to carry on (or look back at) the current game. */
 export interface SavedGame {
+	mode: GameMode;
+	/** The date the game was started, from `dateKey()`. */
+	day: string;
 	answer: string;
 	guesses: string[];
 }
@@ -28,13 +34,16 @@ const isWord = (value: unknown): value is string =>
 const parse = (raw: string | null): SavedGame | null => {
 	if (raw === null) return null;
 	try {
-		const { answer, guesses } = JSON.parse(raw) ?? {};
+		const { mode, day, answer, guesses } = JSON.parse(raw) ?? {};
 		const valid =
+			(mode === 'daily' || mode === 'practice') &&
+			typeof day === 'string' &&
+			/^\d{4}-\d{2}-\d{2}$/.test(day) &&
 			isWord(answer) &&
 			Array.isArray(guesses) &&
 			guesses.length <= MAX_GUESSES &&
 			guesses.every(isWord);
-		return valid ? { answer, guesses } : null;
+		return valid ? { mode, day, answer, guesses } : null;
 	} catch {
 		return null;
 	}

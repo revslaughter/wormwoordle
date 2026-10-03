@@ -21,10 +21,12 @@ const emojiRow = (guess: string, answer: string): string => {
 
 /**
  * Shareable, spoiler-free summary of a finished game.
+ * Pass `day` for the word of the day, so friends can tell they played the same word.
  */
-export const buildShareText = (guesses: string[], answer: string): string => {
-	const title = guesses.includes(answer)
-		? `WormWord 👹 ${guesses.length} ${guesses.length === 1 ? 'guess' : 'guesses'}`
-		: `WormWord 👹 stumped after ${guesses.length} guesses 💀`;
+export const buildShareText = (guesses: string[], answer: string, day?: string): string => {
+	const result = guesses.includes(answer)
+		? `${guesses.length} ${guesses.length === 1 ? 'guess' : 'guesses'}`
+		: `stumped after ${guesses.length} guesses 💀`;
+	const title = ['WormWord 👹', day, result].filter(Boolean).join(' ');
 	return [title, '', ...guesses.map((guess) => emojiRow(guess, answer))].join('\n');
 };

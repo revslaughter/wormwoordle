@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createGameStore } from './savedGame';
+import { createGameStore, type SavedGame } from './savedGame';
 
 /** Just enough of Web Storage for the store. */
 const memoryStorage = (initial: Record<string, string> = {}) => {
@@ -15,6 +15,7 @@ const memoryStorage = (initial: Record<string, string> = {}) => {
 };
 
 const KEY = 'wormwordle:game';
+const base: SavedGame = { mode: 'daily', day: '2026-10-03', answer: 'worm', guesses: [] };
 
 describe('createGameStore', () => {
 	it('loads nothing when nothing has been saved', () => {
@@ -23,17 +24,14 @@ describe('createGameStore', () => {
 
 	it('loads what was saved', () => {
 		const { storage } = memoryStorage();
-		createGameStore(() => storage).save({ answer: 'worm', guesses: ['cat', 'dog'] });
-		expect(createGameStore(() => storage).load()).toEqual({
-			answer: 'worm',
-			guesses: ['cat', 'dog']
-		});
+		createGameStore(() => storage).save({ ...base, guesses: ['cat', 'dog'] });
+		expect(createGameStore(() => storage).load()).toEqual({ ...base, guesses: ['cat', 'dog'] });
 	});
 
 	it('forgets a game when cleared', () => {
 		const { storage } = memoryStorage();
 		const store = createGameStore(() => storage);
-		store.save({ answer: 'worm', guesses: [] });
+		store.save(base);
 		store.clear();
 		expect(store.load()).toBeNull();
 	});
@@ -45,15 +43,15 @@ describe('createGameStore', () => {
 		it.each([
 			['not JSON', '{oops'],
 			['null', 'null'],
-			['no answer', JSON.stringify({ guesses: [] })],
-			['an answer that is too short', JSON.stringify({ answer: 'ab', guesses: [] })],
-			['an answer that is not lowercase letters', JSON.stringify({ answer: 'Worm', guesses: [] })],
-			['guesses that are not a list', JSON.stringify({ answer: 'worm', guesses: 'cat' })],
-			['a guess that is not a word', JSON.stringify({ answer: 'worm', guesses: ['cat', 7] })],
-			[
-				'more guesses than allowed',
-				JSON.stringify({ answer: 'worm', guesses: Array(8).fill('cat') })
-			]
+			['an unknown mode', JSON.stringify({ ...base, mode: 'hard' })],
+			['no date', JSON.stringify({ ...base, day: undefined })],
+			['a malformed date', JSON.stringify({ ...base, day: 'today' })],
+			['no answer', JSON.stringify({ ...base, answer: undefined })],
+			['an answer that is too short', JSON.stringify({ ...base, answer: 'ab' })],
+			['an answer that is not lowercase letters', JSON.stringify({ ...base, answer: 'Worm' })],
+			['guesses that are not a list', JSON.stringify({ ...base, guesses: 'cat' })],
+			['a guess that is not a word', JSON.stringify({ ...base, guesses: ['cat', 7] })],
+			['more guesses than allowed', JSON.stringify({ ...base, guesses: Array(8).fill('cat') })]
 		])('ignores %s', (_, raw) => {
 			expect(loadRaw(raw)).toBeNull();
 		});
@@ -64,7 +62,7 @@ describe('createGameStore', () => {
 			throw new Error('blocked');
 		});
 		expect(store.load()).toBeNull();
-		expect(() => store.save({ answer: 'worm', guesses: [] })).not.toThrow();
+		expect(() => store.save(base)).not.toThrow();
 		expect(() => store.clear()).not.toThrow();
 	});
 });

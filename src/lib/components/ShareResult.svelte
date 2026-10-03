@@ -26,6 +26,8 @@
 	pre {
 		font-family: inherit;
 		line-height: 1.4;
+		/* The parent centres its text; the share text should line up with the grid's left edge */
+		text-align: left;
 		user-select: all;
 	}
 	button {
