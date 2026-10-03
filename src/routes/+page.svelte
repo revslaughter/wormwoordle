@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { blur } from 'svelte/transition';
 	import MenuButton from '#lib/components/MenuButton.svelte';
@@ -9,10 +10,14 @@
 	import AnswerReveal from '#lib/components/AnswerReveal.svelte';
 
 	import { Game } from '#lib/game/game.svelte';
+	import { wordSource } from '#lib/game/wordSource';
 	import { lengthHint } from '#lib/game/analyze';
 	import { buildShareText } from '#lib/game/share';
 
-	const game = new Game();
+	const game = new Game(wordSource);
+
+	// Load the answer in the browser only; the page is also prerendered at build time
+	onMount(game.start);
 
 	let showRules = $state(false);
 
